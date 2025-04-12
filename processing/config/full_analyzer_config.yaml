@@ -1,0 +1,113 @@
+default_score_threshold: 0.4
+nlp_configuration:
+  models:
+  - lang_code: de
+    model_name:
+      spacy: de_core_news_sm
+      transformers: StanfordAIMI/stanford-deidentifier-base
+  ner_model_configuration:
+    labels_to_ignore:
+    - ORGANIZATION
+    - CARDINAL
+    - EVENT
+    - LANGUAGE
+    - LAW
+    - MONEY
+    - ORDINAL
+    - PERCENT
+    - PRODUCT
+    - QUANTITY
+    - WORK_OF_ART
+    low_confidence_score_multiplier: 0.4
+    low_score_entity_names:
+    - null
+    model_to_presidio_entity_mapping:
+      DATE: DATE_TIME
+      FAC: LOCATION
+      GPE: LOCATION
+      LOC: LOCATION
+      LOCATION: LOCATION
+      NORP: NRP
+      ORG: ORGANIZATION
+      ORGANIZATION: ORGANIZATION
+      PER: PERSON
+      PERSON: PERSON
+      TIME: DATE_TIME
+  nlp_engine_name: transformers
+recognizer_registry:
+  global_regex_flags: 26
+  recognizers:
+  - name: EmailRecognizer
+    supported_languages:
+    - context:
+      - email
+      - kontakt
+      language: de
+    - context:
+      - email
+      - contatto
+      language: it
+    - language: en
+    type: predefined
+  - name: AUTLicensePlateRecognizer
+    patterns:
+    - name: Austrian license plate
+      regex: \b[A-Z]{1,2}[-\s]?[0-9]{1,5}[A-Z]{0,2}\b
+      score: 0.2
+    supported_entity: AUT_LICENSE_PLATE
+    supported_languages:
+    - context:
+      - kennzeichen
+      - fahrzeug
+      - kfz
+      language: de
+    - context:
+      - targa
+      - veicolo
+      - auto
+      language: it
+    - context:
+      - license
+      - plate
+      - vehicle
+      - car
+      language: en
+    type: custom
+  - name: DateRecognizer
+    supported_languages:
+    - en
+    - de
+    - it
+    type: predefined
+  - name: IbanRecognizer
+    supported_languages:
+    - en
+    - de
+    - it
+    type: predefined
+  - name: IpRecognizer
+    supported_languages:
+    - en
+    - de
+    - it
+    type: predefined
+  - name: MedicalLicenseRecognizer
+    supported_languages:
+    - en
+    - de
+    - it
+    type: predefined
+  - name: PhoneRecognizer
+    supported_languages:
+    - en
+    - de
+    - it
+    type: predefined
+  supported_languages:
+  - en
+  - de
+  - it
+supported_languages:
+- de
+- it
+- en
