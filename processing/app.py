@@ -14,6 +14,7 @@ from typing import Tuple
 from flask import Flask, Response, jsonify, request
 from presidio_analyzer import AnalyzerEngine, AnalyzerEngineProvider, AnalyzerRequest
 from presidio_analyzer.context_aware_enhancers import LemmaContextAwareEnhancer
+from utils.engine_factory import create_analyzer_engine
 from werkzeug.exceptions import HTTPException
 
 from core.flair_recognizer import FlairRecognizer
@@ -43,29 +44,15 @@ class Server:
     """HTTP Server for calling Custom Presidio Analyzer."""
 
     def __init__(self):
+        # Init logging
         fileConfig(Path(Path(__file__).parent / "config", LOGGING_CONF_FILE))
         self.logger = logging.getLogger("guard-analyzer")
         self.logger.setLevel(os.environ.get("LOG_LEVEL", self.logger.level))
         self.app = Flask(__name__)
 
-        full_analyzer_conf_file = os.environ.get("ANALYZER_CONF_FILE")
-
-        self.logger.info("Starting analyzer engine")
-        self.engine: AnalyzerEngine = AnalyzerEngineProvider(
-            analyzer_engine_conf_file=full_analyzer_conf_file,
-        ).create_engine()
-        
-
-        # Set up the context aware enhancer
-        context_enhancer = LemmaContextAwareEnhancer(context_prefix_count=10, 
-                                             context_suffix_count=10)
-        self.engine.context_aware_enhancer = context_enhancer
-        
-        # Add the flair recognizer for the supported languages
-        supported_languages = ["en", "de"]
-        for lang in supported_languages:
-            flair_recognizer = FlairRecognizer(supported_language=lang)
-            self.engine.registry.add_recognizer(flair_recognizer)
+        # Init the analyzer engine
+        self.logger.info("Initializing analyzer engine...")
+        self.engine:AnalyzerEngine = create_analyzer_engine()
     
         self.logger.info(WELCOME_MESSAGE)
 
