@@ -1,0 +1,54 @@
+# Based on: https://huggingface.co/yonigo/distilbert-base-multilingual-cased-pii
+
+# NOTE THAT PERSON WAS IGNORED SINCE ANOTHER RECOGNIZER SHOULD DETECT IT
+nlp_configuration:
+  nlp_engine_name: transformers
+
+  models:
+    - lang_code: en
+      model_name:
+        spacy: en_core_web_lg
+        transformers: yonigo/distilbert-base-multilingual-cased-pii
+    - lang_code: de
+      model_name:
+        spacy: de_core_news_lg
+        transformers: yonigo/distilbert-base-multilingual-cased-pii
+    - lang_code: it
+      model_name:
+        spacy: it_core_news_lg
+        transformers: yonigo/distilbert-base-multilingual-cased-pii
+
+  ner_model_configuration:
+    labels_to_ignore:
+      - O
+    aggregation_strategy: simple # Options: "simple", "first", "average", "max"
+    alignment_mode: expand # Options: "strict", "contract", "expand"
+
+    # Windowing for long texts. Value is the *overlap* between windows.
+    # DistilBERT is smaller than RoBERTa, a stride of 128 might be reasonable.
+    stride: 16 # Adjust based on performance and accuracy needs
+
+    model_to_presidio_entity_mapping:
+      CITY: LOCATION
+      COUNTRY: LOCATION
+      EMAIL: EMAIL_ADDRESS
+      GIVENNAME1: PERSON
+      GIVENNAME2: PERSON
+      LASTNAME1: PERSON
+      LASTNAME2: PERSON
+      LASTNAME3: PERSON
+      POSTCODE: LOCATION
+      SECADDRESS: LOCATION
+      STATE: LOCATION
+      STREET: LOCATION
+      TEL: PHONE_NUMBER
+      # Check model cards if others are needed
+
+
+    # Optional: Configure low confidence score handling if needed
+    low_confidence_score_multiplier: 0.4
+    low_score_entity_names:
+    - ID
+    labels_to_ignore:
+    -
+    #- PERSON

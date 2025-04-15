@@ -1,0 +1,113 @@
+recognizer_registry:
+  supported_languages: 
+    - en
+    - de
+    - it
+  global_regex_flags: 26
+
+  recognizers:
+    # When a parameter is omitted load the default arguments (context words, etc.)
+    # Some recognizers are explicitly implemented in spacy hence do not need to be overloaded
+
+    # Recognizes personalized emails: support@company.com
+    # Detects generic emails
+    - name: EmailRecognizer
+      supported_languages:
+        - language: de
+          context: [email, kontakt]
+        - language: it
+          context: [email, contatto]
+        - language: en
+      type: predefined
+
+
+    # Detects Austrian IDs
+    # - name: AUTIdentificationNumberRecognizer
+    #   supported_languages:
+    #     - language: de
+    #       context: [ausweisnummer,can, kzn, identifikationsnummer, personalausweisnummer, ausweis]
+    #     - language: it
+    #       context: [numero, can, identificativo, carta, identità, documento]
+    #     - language: en
+    #       context: [identification, can, number, id, identity, document]
+    #   supported_entity: AUT_ID_NUMBER
+    #   patterns:
+    #     - name: "Austrian ID number"
+    #       regex: "\\b[0-9]{6}\\b"
+    #       score: 0.2
+    #   type: custom
+
+    # - name: AUTSocialSecurityNumberRecognizer
+    #   supported_languages:
+    #     - language: de
+    #       context: [sozialversicherungsnummer, svnr, versicherungsnummer]
+    #     - language: it
+    #       context: [previdenza, sicurezza, sociale]
+    #     - language: en
+    #       context: [social, security, insurance]
+    #   type: custom
+    #   supported_entity: AUT_SSN
+    #   patterns:
+    #     - name: "Austrian social security number"
+    #       regex: "\\b\\d{4}\\s?\\d{6}\\b"
+    #       score: 0.2
+
+    # - name: AUTPassportNumberRecognizer
+    #   supported_languages:
+    #     - language: de
+    #       context: [reisepass, passnummer, pass]
+    #     - language: it
+    #       context: [passaporto]
+    #     - language: en
+    #       context: [passport]
+    #   type: custom
+    #   supported_entity: AUT_PASSPORT
+    #   patterns:
+    #     - name: "Austrian passport number"
+    #       regex: "\\b[A-Z][0-9]{7}\\b"
+    #       score: 0.2
+
+    # License plate for Austrian vehicles
+    - name: AUTLicensePlateRecognizer
+      supported_languages:
+        - language: de
+          context: [kennzeichen, fahrzeug, kfz]
+        - language: it
+          context: [targa, veicolo, auto]
+        - language: en
+          context: [license, plate, vehicle, car]
+      type: custom
+      supported_entity: AUT_LICENSE_PLATE
+      patterns:
+        - name: "Austrian license plate"
+          regex: \b[A-Z]{1,2}[-\s]?[0-9]{1,5}[-\s]?[A-Z]{0,2}\b
+          score: 0.4
+
+    # Predefined recognizers, they are not needed though.
+    # - name: DateRecognizer
+    #   supported_languages:
+    #     - en
+    #     - de
+    #     - it
+    #   type: predefined
+
+    # - name: IbanRecognizer
+    #   supported_languages:
+    #     - en
+    #     - de
+    #     - it
+    #   type: predefined
+
+    # - name: IpRecognizer
+    #   supported_languages:
+    #     - en
+    #     - de
+    #     - it
+    #   type: predefined
+
+    - name: PhoneRecognizer
+      supported_languages:
+        - en
+        - de
+        - it
+      type: predefined

@@ -1,0 +1,92 @@
+default_score_threshold: 0.4
+nlp_configuration:
+  models:
+  - lang_code: en
+    model_name:
+      spacy: en_core_web_lg
+      transformers: yonigo/distilbert-base-multilingual-cased-pii
+  - lang_code: de
+    model_name:
+      spacy: de_core_news_lg
+      transformers: yonigo/distilbert-base-multilingual-cased-pii
+  - lang_code: it
+    model_name:
+      spacy: it_core_news_lg
+      transformers: yonigo/distilbert-base-multilingual-cased-pii
+  ner_model_configuration:
+    aggregation_strategy: simple
+    alignment_mode: expand
+    labels_to_ignore:
+    - null
+    low_confidence_score_multiplier: 0.4
+    low_score_entity_names:
+    - ID
+    model_to_presidio_entity_mapping:
+      CITY: LOCATION
+      COUNTRY: LOCATION
+      EMAIL: EMAIL_ADDRESS
+      GIVENNAME1: PERSON
+      GIVENNAME2: PERSON
+      LASTNAME1: PERSON
+      LASTNAME2: PERSON
+      LASTNAME3: PERSON
+      POSTCODE: LOCATION
+      SECADDRESS: LOCATION
+      STATE: LOCATION
+      STREET: LOCATION
+      TEL: PHONE_NUMBER
+    stride: 16
+  nlp_engine_name: transformers
+recognizer_registry:
+  global_regex_flags: 26
+  recognizers:
+  - name: EmailRecognizer
+    supported_languages:
+    - context:
+      - email
+      - kontakt
+      language: de
+    - context:
+      - email
+      - contatto
+      language: it
+    - language: en
+    type: predefined
+  - name: AUTLicensePlateRecognizer
+    patterns:
+    - name: Austrian license plate
+      regex: \b[A-Z]{1,2}[-\s]?[0-9]{1,5}[-\s]?[A-Z]{0,2}\b
+      score: 0.4
+    supported_entity: AUT_LICENSE_PLATE
+    supported_languages:
+    - context:
+      - kennzeichen
+      - fahrzeug
+      - kfz
+      language: de
+    - context:
+      - targa
+      - veicolo
+      - auto
+      language: it
+    - context:
+      - license
+      - plate
+      - vehicle
+      - car
+      language: en
+    type: custom
+  - name: PhoneRecognizer
+    supported_languages:
+    - en
+    - de
+    - it
+    type: predefined
+  supported_languages:
+  - en
+  - de
+  - it
+supported_languages:
+- de
+- it
+- en

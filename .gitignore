@@ -1,3 +1,4 @@
 .idea
 /processing/.conda/
 /processing/venv/
+__pycache__

@@ -1,0 +1,58 @@
+nlp_configuration:
+  nlp_engine_name: transformers
+  models:
+    -
+      lang_code: en
+      model_name:
+        spacy: en_core_web_lg
+        transformers: iiiorg/piiranha-v1-detect-personal-information
+    -
+      lang_code: de
+      model_name:
+        spacy: de_core_news_lg
+        transformers: iiiorg/piiranha-v1-detect-personal-information
+    -
+      lang_code: it
+      model_name:
+        spacy: it_core_news_lg
+        transformers: iiiorg/piiranha-v1-detect-personal-information
+
+  ner_model_configuration:
+    labels_to_ignore:
+    - O
+    aggregation_strategy: simple # "simple", "first", "average", "max"
+    stride: 16                # If stride >= 0, process long texts in
+                              # overlapping windows of the model max
+                              # length. The value is the length of the
+                              # window overlap in transformer tokenizer
+                              # tokens, NOT the length of the stride.
+    alignment_mode: expand # "strict", "contract", "expand"
+    model_to_presidio_entity_mapping:
+      ACCOUNTNUM: ID
+      BUILDINGNUM: ID
+      CITY: LOCATION
+      CREDITCARDNUMBER: CREDIT_CARD
+      DATEOFBIRTH: DATE_TIME
+      DRIVERLICENSENUM: ID
+      EMAIL: EMAIL
+      GIVENNAME: PERSON
+      IDCARDNUM: ID
+      PASSWORD: ID
+      SOCIALNUM: ID
+      STREET: LOCATION
+      SURNAME: PERSON
+      TAXNUM: ID
+      TELEPHONENUM: PHONE_NUMBER
+      USERNAME: PERSON
+      ZIPCODE: LOCATION
+
+    low_confidence_score_multiplier: 0.4
+    low_score_entity_names:
+    -
+    labels_to_ignore:
+    - ID
+    - DATE_TIME
+    - CREDIT_CARD
+    #- PERSON
+    
+    

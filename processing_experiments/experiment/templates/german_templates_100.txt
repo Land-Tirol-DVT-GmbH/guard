@@ -1,0 +1,100 @@
+Mein Name ist {{name}}.
+Ich heiße {{name}}.
+Der Verantwortliche ist {{name}}.
+Die Studie wurde erstellt von {{name}}.
+{{name}} ist mein vollständiger Name.
+Kontaktperson: {{name}}.
+Autor der Studie ist {{name}}.
+Bitte wenden Sie sich an {{name}}.
+{{name}} hat diesen Bericht verfasst.
+Für Rückfragen steht {{name}} zur Verfügung.
+Laut Bericht: Mein Name ist {{name}}.
+Laut Bericht: Ich heiße {{name}}.
+Laut Bericht: Der Verantwortliche ist {{name}}.
+Laut Bericht: Die Studie wurde erstellt von {{name}}.
+Laut Bericht: {{name}} ist mein vollständiger Name.
+Laut Bericht: Kontaktperson: {{name}}.
+Laut Bericht: Autor der Studie ist {{name}}.
+Laut Bericht: Bitte wenden Sie sich an {{name}}.
+Laut Bericht: {{name}} hat diesen Bericht verfasst.
+Laut Bericht: Für Rückfragen steht {{name}} zur Verfügung.
+Ich wohne in {{address}}.
+Die Adresse lautet {{address}}.
+Sie finden uns unter {{address}}.
+Die Büroräume befinden sich in {{address}}.
+Unsere Niederlassung ist in {{address}}.
+Besuchen Sie uns in der {{address}}.
+Der Standort ist {{address}}.
+Die Anschrift ist {{address}}.
+Bitte kommen Sie zu {{address}}.
+{{address}} ist unser offizieller Sitz.
+Standort laut Dokument: Ich wohne in {{address}}.
+Standort laut Dokument: Die Adresse lautet {{address}}.
+Standort laut Dokument: Sie finden uns unter {{address}}.
+Standort laut Dokument: Die Büroräume befinden sich in {{address}}.
+Standort laut Dokument: Unsere Niederlassung ist in {{address}}.
+Standort laut Dokument: Besuchen Sie uns in der {{address}}.
+Standort laut Dokument: Der Standort ist {{address}}.
+Standort laut Dokument: Die Anschrift ist {{address}}.
+Standort laut Dokument: Bitte kommen Sie zu {{address}}.
+Standort laut Dokument: {{address}} ist unser offizieller Sitz.
+Meine E-Mail ist {{email}}.
+Sie erreichen mich unter {{email}}.
+Schreiben Sie an {{email}}.
+Kontaktieren Sie uns via {{email}}.
+Unsere E-Mail-Adresse ist {{email}}.
+Ihre Anfrage senden Sie bitte an {{email}}.
+{{email}} ist der beste Weg zur Kontaktaufnahme.
+Bei Fragen: {{email}}.
+{{email}} dient als Kontaktadresse.
+Melden Sie sich über {{email}}.
+Die E-Mail-Adresse gemäß Quelle: Meine E-Mail ist {{email}}.
+Die E-Mail-Adresse gemäß Quelle: Sie erreichen mich unter {{email}}.
+Die E-Mail-Adresse gemäß Quelle: Schreiben Sie an {{email}}.
+Die E-Mail-Adresse gemäß Quelle: Kontaktieren Sie uns via {{email}}.
+Die E-Mail-Adresse gemäß Quelle: Unsere E-Mail-Adresse ist {{email}}.
+Die E-Mail-Adresse gemäß Quelle: Ihre Anfrage senden Sie bitte an {{email}}.
+Die E-Mail-Adresse gemäß Quelle: {{email}} ist der beste Weg zur Kontaktaufnahme.
+Die E-Mail-Adresse gemäß Quelle: Bei Fragen: {{email}}.
+Die E-Mail-Adresse gemäß Quelle: {{email}} dient als Kontaktadresse.
+Die E-Mail-Adresse gemäß Quelle: Melden Sie sich über {{email}}.
+Meine Telefonnummer ist {{phone_number}}.
+Rufen Sie mich an unter {{phone_number}}.
+Telefonisch erreichbar unter {{phone_number}}.
+Unsere Telefonnummer: {{phone_number}}.
+Kontaktieren Sie uns telefonisch: {{phone_number}}.
+Hotline: {{phone_number}}.
+Wählen Sie {{phone_number}}.
+Telefonnummer für Rückfragen: {{phone_number}}.
+Bei Anruf bitte {{phone_number}} verwenden.
+Sie erreichen uns unter {{phone_number}}.
+Telefonnummer laut Kontaktangaben: Meine Telefonnummer ist {{phone_number}}.
+Telefonnummer laut Kontaktangaben: Rufen Sie mich an unter {{phone_number}}.
+Telefonnummer laut Kontaktangaben: Telefonisch erreichbar unter {{phone_number}}.
+Telefonnummer laut Kontaktangaben: Unsere Telefonnummer: {{phone_number}}.
+Telefonnummer laut Kontaktangaben: Kontaktieren Sie uns telefonisch: {{phone_number}}.
+Telefonnummer laut Kontaktangaben: Hotline: {{phone_number}}.
+Telefonnummer laut Kontaktangaben: Wählen Sie {{phone_number}}.
+Telefonnummer laut Kontaktangaben: Telefonnummer für Rückfragen: {{phone_number}}.
+Telefonnummer laut Kontaktangaben: Bei Anruf bitte {{phone_number}} verwenden.
+Telefonnummer laut Kontaktangaben: Sie erreichen uns unter {{phone_number}}.
+Mein KFZ Kennzeichen ist {{vehicle}}.
+Das Fahrzeugkennzeichen lautet {{vehicle}}.
+Kennzeichen: {{vehicle}}.
+Ich fahre ein Auto mit dem Kennzeichen {{vehicle}}.
+Registriertes Kennzeichen ist {{vehicle}}.
+Das KFZ ist gemeldet auf {{vehicle}}.
+Nummernschild: {{vehicle}}.
+{{vehicle}} ist mein amtliches Kennzeichen.
+Offizielles Fahrzeugkennzeichen: {{vehicle}}.
+Bitte notieren Sie sich das Kennzeichen {{vehicle}}.
+Das in der Akte vermerkte Kennzeichen ist: Mein KFZ Kennzeichen ist {{vehicle}}.
+Das in der Akte vermerkte Kennzeichen ist: Das Fahrzeugkennzeichen lautet {{vehicle}}.
+Das in der Akte vermerkte Kennzeichen ist: Kennzeichen: {{vehicle}}.
+Das in der Akte vermerkte Kennzeichen ist: Ich fahre ein Auto mit dem Kennzeichen {{vehicle}}.
+Das in der Akte vermerkte Kennzeichen ist: Registriertes Kennzeichen ist {{vehicle}}.
+Das in der Akte vermerkte Kennzeichen ist: Das KFZ ist gemeldet auf {{vehicle}}.
+Das in der Akte vermerkte Kennzeichen ist: Nummernschild: {{vehicle}}.
+Das in der Akte vermerkte Kennzeichen ist: {{vehicle}} ist mein amtliches Kennzeichen.
+Das in der Akte vermerkte Kennzeichen ist: Offizielles Fahrzeugkennzeichen: {{vehicle}}.
+Das in der Akte vermerkte Kennzeichen ist: Bitte notieren Sie sich das Kennzeichen {{vehicle}}.
