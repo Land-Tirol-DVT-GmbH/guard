@@ -9,11 +9,9 @@ import logging
 import os
 from logging.config import fileConfig
 from pathlib import Path
-from typing import Tuple
 
 from flask import Flask, Response, jsonify, request
-from presidio_analyzer import AnalyzerEngine, AnalyzerEngineProvider, AnalyzerRequest
-from presidio_analyzer.context_aware_enhancers import LemmaContextAwareEnhancer
+from presidio_analyzer import AnalyzerEngine, AnalyzerRequest
 from utils.engine_factory import create_analyzer_engine
 from werkzeug.exceptions import HTTPException
 
@@ -62,7 +60,7 @@ class Server:
             return "Presidio Analyzer service is up"
 
         @self.app.route("/analyze", methods=["POST"])
-        def analyze() -> Tuple[str, int]:
+        def analyze():
             """Execute the analyzer function."""
             # Parse the request params
             try:
@@ -102,7 +100,7 @@ class Server:
                 return jsonify(error=e.args[0]), 500
 
         @self.app.route("/recognizers", methods=["GET"])
-        def recognizers() -> Tuple[str, int]:
+        def recognizers() -> tuple[Response, int]:
             """Return a list of supported recognizers."""
             language = request.args.get("language")
             try:
@@ -117,7 +115,7 @@ class Server:
                 return jsonify(error=e.args[0]), 500
 
         @self.app.route("/supportedentities", methods=["GET"])
-        def supported_entities() -> Tuple[str, int]:
+        def supported_entities() -> tuple[Response, int]:
             """Return a list of supported entities."""
             language = request.args.get("language")
             try:

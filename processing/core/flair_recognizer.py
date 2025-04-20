@@ -1,5 +1,4 @@
 from typing import List, Optional, Set, Tuple
-from presidio_analyzer import EntityRecognizer
 from presidio_analyzer import (
     RecognizerResult,
     EntityRecognizer,
