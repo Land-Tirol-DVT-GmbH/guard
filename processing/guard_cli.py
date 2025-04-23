@@ -4,7 +4,7 @@ import sys
 import argparse
 from pathlib import Path
 # ToDo: move helper_classes to utils
-# from helper_classes import FileHandler, Redactor 
+from utils.file_handler import FileHandler 
 
 def noImplementation():
     print("No implementation")
@@ -21,6 +21,8 @@ def main():
     
     # redactor = Redactor()
     
+    # each document is read in as a string, for a single file, only one document is added 
+    # to document_list, for a directory, each pdf is added as a string.
     document_list = []
     processed_files = []
     
@@ -33,11 +35,11 @@ def main():
             sys.exit(1)
         else:
             print(f"Processing file: {args.file}")
-            noImplementation()
-            # file_handler = FileHandler(args.file, "file")
-            # document = file_handler.get_document_list()
-            # document_list.extend(document)
-            
+            # noImplementation()
+            file_handler = FileHandler(args.file, "file")
+            document = file_handler.get_document_list()
+            document_list.extend(document)
+            print(document)
             output_path = output_dir / f"redacted_{args.file.name}"
             # redactor.redact_document(document, str(args.file), str(output_path))
             # processed_files.append(output_path)
@@ -49,10 +51,9 @@ def main():
         else:
             print(f"Processing directory: {args.directory}")
             noImplementation()
-            # file_handler = FileHandler(args.directory, "dir")
-            # documents = file_handler.get_document_list()
-            # document_list.extend(documents)
-            
+            file_handler = FileHandler(args.directory, "dir")
+            documents = file_handler.get_document_list()
+            document_list.extend(documents)
             # pdf_files = list(args.directory.glob("*.pdf"))
             # for doc, pdf_file in zip(documents, pdf_files):
             #     output_path = output_dir / f"redacted_{pdf_file.name}"
