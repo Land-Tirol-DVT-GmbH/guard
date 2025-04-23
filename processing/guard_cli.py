@@ -1,13 +1,60 @@
-# CLI entry point for using guard pdf redaction.
-
+import os
 import sys
 import argparse
 from pathlib import Path
-# ToDo: move helper_classes to utils
+import requests
 from utils.file_handler import FileHandler 
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path=Path(__file__).parent / '.env')
+
+presidio_api_endpoint = os.environ.get("PRESIDIO_API_ENDPOINT")
+presidio_api_analysis = presidio_api_endpoint + "/analyze"
 
 def noImplementation():
     print("No implementation")
+
+def process_presidio_results(results, page, text):
+    for entity in results:
+        matched_text = text[entity["start"]:entity["end"]]
+        for area in page.search_for(matched_text):
+            page.add_redact_annot(area, fill=(0, 0, 0))
+
+    page.apply_redactions()
+
+    return page
+
+def process_pdf(pdf):
+    pdf_name = Path(pdf.name).name
+    print("Processing:" + pdf_name)
+    for page in pdf:
+        text = page.get_text()
+        built_request = {
+            "text": text,
+            "language": "de"
+        }
+        response = requests.post(presidio_api_analysis, json=built_request)
+        if response.status_code != 200:
+            print(f"Presidio error for: {pdf_name} ")#
+            return False
+            # continue
+
+        results = response.json()
+        page = process_presidio_results(results=results, page=page, text=text)
+
+    return True
+
+def safe_pdf(pdf, output_dir):
+    pdf_name = "REDACTED_" + Path(pdf.name).name
+    output_path = output_dir / pdf_name
+    pdf.save(str(output_path))
+    
+
+def process_document_list(document_list, output_dir):
+    for pdf in document_list:
+        success = process_pdf(pdf=pdf)
+        if(success): 
+            safe_pdf(pdf=pdf, output_dir=output_dir)
 
 def main():
     parser = argparse.ArgumentParser(description="Process and redact PDF files.")
@@ -18,9 +65,7 @@ def main():
     
     output_dir = args.output if args.output else Path("./redacted")
     output_dir.mkdir(exist_ok=True)
-    
-    # redactor = Redactor()
-    
+        
     # each document is read in as a string, for a single file, only one document is added 
     # to document_list, for a directory, each pdf is added as a string.
     document_list = []
@@ -35,14 +80,10 @@ def main():
             sys.exit(1)
         else:
             print(f"Processing file: {args.file}")
-            # noImplementation()
             file_handler = FileHandler(args.file, "file")
             document = file_handler.get_document_list()
             document_list.extend(document)
-            print(document)
-            output_path = output_dir / f"redacted_{args.file.name}"
-            # redactor.redact_document(document, str(args.file), str(output_path))
-            # processed_files.append(output_path)
+
 
     if args.directory:
         if not args.directory.is_dir():
@@ -54,15 +95,12 @@ def main():
             file_handler = FileHandler(args.directory, "dir")
             documents = file_handler.get_document_list()
             document_list.extend(documents)
-            # pdf_files = list(args.directory.glob("*.pdf"))
-            # for doc, pdf_file in zip(documents, pdf_files):
-            #     output_path = output_dir / f"redacted_{pdf_file.name}"
-            #     redactor.redact_document(doc, str(pdf_file), str(output_path))
-            #     processed_files.append(output_path)
 
     if not args.file and not args.directory:
         print("Error: You must provide either a file (-f) or a directory (-d).")
         sys.exit(1)
+
+    process_document_list(document_list=document_list, output_dir=output_dir)
     
     print(f"Documents parsed to text: {len(document_list)}")
     print(f"Documents redacted: {len(processed_files)}")

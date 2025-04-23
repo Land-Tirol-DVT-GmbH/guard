@@ -8,12 +8,16 @@ class FileHandler:
     
     def read_pdf_to_document(self, pdf_file):
         """Read PDF as a document."""
-        print(f"\n\nReading: {pdf_file}")
+        print(f"\nReading: {pdf_file}")
         document = fitz.open(pdf_file)
-        return "\n".join([page.get_text() for page in document])
+        return document
+        # return "\n".join([page.get_text() for page in document])
     
     def get_document_list(self):
-        """Read file(s) and return text content."""
+        """
+        Read file(s) and return text content.
+        returns document_list: An array consisting of fitz.document objects, representing each pdf read.
+        """
         document_list = []
         if self.type == "file":
             doc = self.read_pdf_to_document(str(self.path))
