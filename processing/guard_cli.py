@@ -11,8 +11,11 @@ load_dotenv(dotenv_path=Path(__file__).parent / '.env')
 presidio_api_endpoint = os.environ.get("PRESIDIO_API_ENDPOINT")
 presidio_api_analysis = presidio_api_endpoint + "/analyze"
 
-def noImplementation():
-    print("No implementation")
+#check if presidio is available
+response = requests.get(presidio_api_endpoint + "/health")
+if response.status_code != 200:
+    print(f"Presidio service not available!")
+    sys.exit(1)
 
 def process_presidio_results(results, page, text):
     for entity in results:
@@ -21,8 +24,6 @@ def process_presidio_results(results, page, text):
             page.add_redact_annot(area, fill=(0, 0, 0))
 
     page.apply_redactions()
-
-    return page
 
 def process_pdf(pdf):
     pdf_name = Path(pdf.name).name
@@ -35,14 +36,12 @@ def process_pdf(pdf):
         }
         response = requests.post(presidio_api_analysis, json=built_request)
         if response.status_code != 200:
-            print(f"Presidio error for: {pdf_name} ")#
-            return False
-            # continue
+            print(f"Presidio error for: {pdf_name} ")
+            print(response.text)
+            continue
 
         results = response.json()
-        page = process_presidio_results(results=results, page=page, text=text)
-
-    return True
+        process_presidio_results(results=results, page=page, text=text)
 
 def safe_pdf(pdf, output_dir):
     pdf_name = "REDACTED_" + Path(pdf.name).name
@@ -65,11 +64,8 @@ def main():
     
     output_dir = args.output if args.output else Path("./redacted")
     output_dir.mkdir(exist_ok=True)
-        
-    # each document is read in as a string, for a single file, only one document is added 
-    # to document_list, for a directory, each pdf is added as a string.
+
     document_list = []
-    processed_files = []
     
     if args.file:
         if not args.file.is_file():
@@ -84,14 +80,12 @@ def main():
             document = file_handler.get_document_list()
             document_list.extend(document)
 
-
     if args.directory:
         if not args.directory.is_dir():
             print(f"Error: {args.directory} is not a valid directory.")
             sys.exit(1)
         else:
             print(f"Processing directory: {args.directory}")
-            noImplementation()
             file_handler = FileHandler(args.directory, "dir")
             documents = file_handler.get_document_list()
             document_list.extend(documents)
@@ -103,7 +97,6 @@ def main():
     process_document_list(document_list=document_list, output_dir=output_dir)
     
     print(f"Documents parsed to text: {len(document_list)}")
-    print(f"Documents redacted: {len(processed_files)}")
     print(f"Redacted files saved to: {output_dir}")
 
 if __name__ == "__main__":
