@@ -15,8 +15,11 @@ used_language = "de"
 
 LANGUAGES_DISPLAY = {
     "de": "German",
-    "en": "English"
+    "en": "English",
+    "it": "Italian"
 }
+
+#TODO: Verbose mode maybe?
 
 
 #check if presidio is available
@@ -40,6 +43,7 @@ def process_presidio_results(results, page, text):
             page.add_redact_annot(area, fill=(0, 0, 0))
 
     page.apply_redactions()
+
 
 def process_pdf(pdf):
     """
@@ -65,7 +69,7 @@ def process_pdf(pdf):
         results = response.json()
         process_presidio_results(results=results, page=page, text=text)
 
-def safe_pdf(pdf, output_dir):
+def save_pdf(pdf, output_dir):
     """
     Save the redacted PDF to the output directory with a modified name.
 
@@ -94,7 +98,7 @@ def process_document_list(document_list, output_dir):
 
     for pdf in document_list:
         process_pdf(pdf=pdf)
-        safe_pdf(pdf=pdf, output_dir=output_dir)
+        save_pdf(pdf=pdf, output_dir=output_dir)
 
 
 def is_supported_language(lang_code: str) -> bool:
