@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: presidio-analyzer
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: presidio-analyzer
+  template:
+    metadata:
+      labels:
+        app: presidio-analyzer
+    spec:
+      containers:
+      - name: presidio-analyzer
+        image: presidio-analyzer-app:local
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
+        env:
+        - name: FLASK_APP
+          value: "app.py"
+        - name: ANALYZER_CONF_FILE
+          value: "/app/config/full_analyzer_config.yaml"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: presidio-analyzer-service
+spec:
+  selector:
+    app: presidio-analyzer
+  ports:
+  - port: 80
+    targetPort: 5000
+  type: NodePort
