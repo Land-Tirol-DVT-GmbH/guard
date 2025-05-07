@@ -1,4 +1,6 @@
 .idea
 /processing/.conda/
 /processing/venv/
+/processing/redacted/
 __pycache__
+/presidio-env

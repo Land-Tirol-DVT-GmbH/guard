@@ -79,7 +79,8 @@ class Server:
                 return Response(
                     json.dumps(
                         recognizer_result_list,
-                        default=lambda o: o.to_dict(),
+                        # security measure as the o doesn't always have a proper result object, due to unexpected behaviour of the custom analyzer engine. 
+                        default=lambda o: o.to_dict() if hasattr(o, "to_dict") else str(o),
                         sort_keys=True,
                     ),
                     content_type="application/json",
