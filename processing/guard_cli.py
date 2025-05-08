@@ -23,10 +23,16 @@ LANGUAGES_DISPLAY = {
 
 
 #check if presidio is available
-response = requests.get(presidio_api_endpoint + "/health")
-if response.status_code != 200:
-    print(f"Presidio service not available!")
-    sys.exit(1)
+def check_api_available(api_endpoint: str):
+    """Checks if the refered Presidio-API endpoint is available."""
+    try:
+        response = requests.get(presidio_api_endpoint + "/health")
+        if response.status_code != 200:
+            print(f"Presidio service not available! Received:", response.status_code)
+            sys.exit(1)
+    except requests.exceptions.RequestException as e:
+        print(f"Could not reach presidio service: {e}")
+        sys.exit(1)
 
 def process_presidio_results(results, page, text):
     """
@@ -165,4 +171,5 @@ def main():
     print(f"Redacted files saved to: {output_dir}")
 
 if __name__ == "__main__":
+    check_api_available(presidio_api_endpoint)
     main()
