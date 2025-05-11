@@ -7,6 +7,9 @@ def strip_scores(results):
         for r in results
     ]
 
+def get_expected_areas_of_text(entity):
+    return [entity['text'][e['start']:e['end']] for e in entity['expected']]
+
 @pytest.mark.unit
 def test_lp_recognizer_supported_by_all_langs(setup_engine):
     """
@@ -244,6 +247,7 @@ def test_valid_names_en(setup_engine):
                 f"Text     : {text}\n"
                 f"Expected : {expected}\n"
                 f"Got      : {stripped}\n"
+                f"expected range returns:{get_expected_areas_of_text(case)}\n"
             )
     assert not errors, "\n".join(errors)
 
@@ -281,6 +285,7 @@ def test_valid_names_de_at(setup_engine):
                 f"Text     : {text}\n"
                 f"Expected : {expected}\n"
                 f"Got      : {stripped}\n"
+                f"expected range returns:{get_expected_areas_of_text(case)}\n"
             )
     assert not errors, "\n".join(errors)
 
