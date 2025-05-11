@@ -10,8 +10,7 @@ from processing.guard_cli import save_pdf, process_pdf, process_document_list
 def create_mock_response(status_code=200, json_data=None):
     mock_response = MagicMock()
     mock_response.status_code = status_code
-    if json_data:
-        mock_response.json.return_value = json_data
+    mock_response.json.return_value = json_data
     return mock_response
 
 # Fixtures
@@ -84,12 +83,16 @@ def test_integration_process_pdf(sample_pdf, mock_presidio_response):
 @pytest.mark.integration
 def test_integration_process_document_list(sample_pdf, mock_presidio_response):
     """Integration test for processing a list of real PDF documents. Mocking only Presidio API call."""
+    
     pdf_path, temp_dir = sample_pdf
     output_dir = temp_dir / "output"
     output_dir.mkdir(exist_ok=True)
-    
+    # pdf names for checking if log folder exists
+    pdf_name_1 = "sample"
+    pdf_name_2 = "sample_2"
+
     # Second PDF for testing list processing
-    second_pdf_path = temp_dir / "sample_2.pdf"
+    second_pdf_path = temp_dir / pdf_name_2
     doc2 = fitz.open()
     page = doc2.new_page()
     page.insert_text((50, 50), "This is another sample PDF to test whether a list of PDFs can also be processed by this function.")
@@ -104,12 +107,16 @@ def test_integration_process_document_list(sample_pdf, mock_presidio_response):
             pdf2 = fitz.open(str(second_pdf_path))
             
             document_list = [pdf1, pdf2]
-            process_document_list(document_list, output_dir)
+            process_document_list(document_list=document_list, output_dir=output_dir, log_to_json=True)
             
             expected_output1 = output_dir / f"REDACTED_{pdf_path.name}"
             expected_output2 = output_dir / f"REDACTED_{second_pdf_path.name}"
+            expected_log_output1 = output_dir / f"{pdf_name_1}_LOGS" / "page_0.json"
+            expected_log_output2 = output_dir / f"{pdf_name_2}_LOGS" / "page_0.json"
             assert expected_output1.exists()
             assert expected_output2.exists()
+            assert expected_log_output1.exists()
+            assert expected_log_output2.exists()
 
         finally:
             if 'pdf1' in locals():
@@ -132,7 +139,7 @@ def test_integration_process_document_list_presidio_returns_500(sample_pdf, caps
         pdf_name = Path(pdf.name).name
 
         document_list = [pdf]
-        process_document_list(document_list, output_dir)
+        process_document_list(document_list, output_dir, False)
 
         captured = capsys.readouterr()
 

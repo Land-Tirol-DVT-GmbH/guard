@@ -1,6 +1,8 @@
 import os
 import sys
+import json
 import argparse
+from typing import List, Dict, Any
 from pathlib import Path
 import requests
 from utils.file_handler import FileHandler 
@@ -55,13 +57,20 @@ def process_presidio_results(results, page, text):
     page.apply_redactions()
 
 
-def process_pdf(pdf):
+def process_pdf(pdf, generate_log=False) -> List[Dict[str, Any]]:
     """
     Analyze and redact sensitive information in a single PDF using Presidio.
 
     Args:
         pdf (fitz.Document): A PyMuPDF document object representing the input PDF.
+        generate_log: Generates a log dictionary for each page of the pdf
+    
+    Returns:
+        List:[{"page": count starting at 0, "request": request body, "response": presidio response body}]
     """
+
+    logs = []
+    count = 0
     pdf_name = Path(pdf.name).name
     print("Processing:" + pdf_name)
     for page in pdf:
@@ -71,13 +80,19 @@ def process_pdf(pdf):
             "language": used_language
         }
         response = requests.post(presidio_api_analysis, json=built_request)
+        if generate_log:
+            logs.append({"page": count, "request": built_request, "response": response.json()})
+            
+
         if response.status_code != 200:
             print(f"Presidio error for: {pdf_name} ")
             print(response.text)
             continue
-
+        
         results = response.json()
         process_presidio_results(results=results, page=page, text=text)
+        count += 1
+    return logs
 
 def save_pdf(pdf, output_dir):
     """
@@ -96,8 +111,26 @@ def save_pdf(pdf, output_dir):
     except Exception as e:
         print(f"[ERROR] Failed to save PDF: {e}")
     
+def save_logs_for_pdf(pdf, output_dir, log_dict):
+    folder_name = Path(pdf.name).stem + "_LOGS"
+    output_path = output_dir / folder_name
+    output_path.mkdir(parents=True, exist_ok=True)
 
-def process_document_list(document_list, output_dir):
+    for page in log_dict:
+        file_name = f"page_{page['page']}.json"
+        content = {
+            "request": page["request"], 
+            "response": page["response"]
+        }
+        
+        try:
+            with open(output_path / file_name, "w", encoding="utf-8") as f:
+                json.dump(content, f, indent=2)
+        except (OSError, TypeError, ValueError) as e:
+            print(f"Failed to write log for page {page['page']}: {e}")
+
+
+def process_document_list(document_list, output_dir, log_to_json=False):
     """
     Process a list of PDFs, redacting sensitive content and saving results.
 
@@ -107,8 +140,10 @@ def process_document_list(document_list, output_dir):
     """
 
     for pdf in document_list:
-        process_pdf(pdf=pdf)
+        log_dict = process_pdf(pdf=pdf, generate_log=log_to_json)
         save_pdf(pdf=pdf, output_dir=output_dir)
+        if(log_to_json):
+            save_logs_for_pdf(pdf=pdf, output_dir=output_dir, log_dict=log_dict)
 
 
 def is_supported_language(lang_code: str) -> bool:
@@ -126,6 +161,7 @@ def main():
     parser.add_argument("-d", "--directory", type=Path, help="Path to a directory containing one or multiple PDF files to redact.")
     parser.add_argument("-o", "--output", type=Path, help="Directory where the redacted files will be saved. Defaults to './redacted'.")
     parser.add_argument("-l", "--language", type=str, help=f"Language for Presidio analysis. We currently support: {format_supported_languages()}\n Defaults to 'de'.")
+    parser.add_argument("-j", "--json-log", action="store_true", help="Enable JSON logging. Saves Presidio input/output logs per page in the specified output folder.")
     args = parser.parse_args()
 
     document_list = []
@@ -155,6 +191,8 @@ def main():
             document = file_handler.get_document_list()
             document_list.extend(document)
 
+    log_results_into_json = args.json_log
+
     if args.directory:
         if not args.directory.is_dir():
             print(f"Error: {args.directory} is not a valid directory.")
@@ -169,7 +207,7 @@ def main():
         print("Error: You must provide either a file (-f) or a directory (-d).")
         sys.exit(1)
 
-    process_document_list(document_list=document_list, output_dir=output_dir)
+    process_document_list(document_list=document_list, output_dir=output_dir, log_to_json=log_results_into_json)
     
     print(f"Documents parsed to text: {len(document_list)}")
     print(f"Redacted files saved to: {output_dir}")
