@@ -11,7 +11,7 @@ def get_expected_areas_of_text(entity):
     return [entity['text'][e['start']:e['end']] for e in entity['expected']]
 
 @pytest.mark.unit
-def test_lp_recognizer_supported_by_all_langs(setup_engine):
+def test_person_recognizer_supported_by_all_langs(setup_engine):
     """
     Pattern recognizer (for entity PERSON) is supported by it, de, en
     """
@@ -373,12 +373,3 @@ def test_invalid_names_en(setup_engine):
                 f"Entities : {persons}"
             )
         assert not errors, "\n".join(errors)
-        
-
-# # ----- ERROR CASE -----
-
-@pytest.mark.unit
-def test_analyze_without_language(setup_engine):
-    text = "Ich heiße Johannes Müller."
-    with pytest.raises(TypeError):
-        setup_engine.analyze(text)

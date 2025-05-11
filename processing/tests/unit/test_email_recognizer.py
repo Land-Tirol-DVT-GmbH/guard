@@ -69,7 +69,7 @@ def get_expected_areas_of_text(entity):
     return [entity['text'][e['start']:e['end']] for e in entity['expected']]
 
 @pytest.mark.unit
-def test_lp_recognizer_supported_by_all_langs(setup_engine):
+def test_email_recognizer_supported_by_all_langs(setup_engine):
     """
     Pattern recognizer (for entity PERSON) is supported by it, de, en
     """
