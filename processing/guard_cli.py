@@ -45,9 +45,13 @@ def process_presidio_results(results, page, text):
     """
     for entity in results:
         matched_text = text[entity["start"]:entity["end"]]
-        for area in page.search_for(matched_text):
-            page.add_redact_annot(area, fill=(0, 0, 0))
-
+        areas = page.search_for(matched_text)
+        if areas:
+            for area in areas:
+                page.add_redact_annot(area, fill=(0, 0, 0))
+        else:
+            #Here, if verbose is added, add this for verbose printout
+            print(f"Text '{matched_text}' not found for redaction on this page.")
     page.apply_redactions()
 
 
