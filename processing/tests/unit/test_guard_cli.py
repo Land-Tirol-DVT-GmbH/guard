@@ -5,6 +5,14 @@ from unittest.mock import patch
 
 from processing.guard_cli import is_supported_language, check_api_available, save_pdf
 
+# Utils
+def create_mock_response(status_code=200, json_data=None):
+    mock_response = MagicMock()
+    mock_response.status_code = status_code
+    if json_data:
+        mock_response.json.return_value = json_data
+    return mock_response
+
 # Tests
 @pytest.mark.unit
 def test_is_supported_language():
