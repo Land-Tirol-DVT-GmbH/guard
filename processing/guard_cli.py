@@ -23,12 +23,11 @@ LANGUAGES_DISPLAY = {
 
 #TODO: Verbose mode maybe?
 
-
 #check if presidio is available
 def check_api_available(api_endpoint: str):
     """Checks if the refered Presidio-API endpoint is available."""
     try:
-        response = requests.get(presidio_api_endpoint + "/health")
+        response = requests.get(api_endpoint + "/health")
         if response.status_code != 200:
             print(f"Presidio service not available! Received:", response.status_code)
             sys.exit(1)
@@ -52,8 +51,8 @@ def process_presidio_results(results, page, text, should_redact=True, verbose = 
         results (List[Dict]): List of recognized PII entities, each with 'start' and 'end' offsets.
         page (fitz.Page): The PDF page object from PyMuPDF to apply redactions on.
         text (str): Full text content of the page, used to locate entities.
-        should_redact (bool): If True, redact. If False, highlight.
-        verbose (bool): If True, print messages for not-found text.
+        should_redact (bool): If True, redact. If False, highlight. Defaults to True.
+        verbose (bool): If True, print messages for not-found text. Defaults to False.
     """
     if not results:
         return
@@ -113,15 +112,17 @@ def process_pdf(pdf, generate_log=False, verbose=False, should_redact=True) -> L
         count += 1
     return logs
 
-def save_pdf(pdf, output_dir):
+def save_pdf(pdf, output_dir, has_been_highlighted=False):
     """
     Save the redacted PDF to the output directory with a modified name.
 
     Args:
         pdf (fitz.Document): The PyMuPDF document object to save.
         output_dir (Path): The output directory path where the file will be saved.
+        has_been_highlighted (bool): Sets prefix to HIGHLIGHTED_ if set to True. Defaults to False.
     """
-    pdf_name = "REDACTED_" + Path(pdf.name).name
+    prefix = "REDACTED_" if not has_been_highlighted else "HIGHLIGHTED_"
+    pdf_name = prefix + Path(pdf.name).name
     output_path = output_dir / pdf_name
 
     try:
@@ -160,7 +161,7 @@ def process_document_list(document_list, output_dir, log_to_json=False, should_r
 
     for pdf in document_list:
         log_dict = process_pdf(pdf=pdf, generate_log=log_to_json, should_redact=should_redact)
-        save_pdf(pdf=pdf, output_dir=output_dir)
+        save_pdf(pdf=pdf, output_dir=output_dir, has_been_highlighted=(not should_redact))
         if(log_to_json):
             save_logs_for_pdf(pdf=pdf, output_dir=output_dir, log_dict=log_dict)
 
@@ -188,7 +189,7 @@ def main():
 
     used_language = args.language
 
-    log_results_into_json = args.json_log    
+    log_results_into_json = args.json_log or args.highlight
     highlight_mode = args.highlight
 
     if args.output:

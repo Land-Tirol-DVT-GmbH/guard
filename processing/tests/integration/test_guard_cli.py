@@ -4,7 +4,9 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-from processing.guard_cli import save_pdf, process_pdf, process_document_list
+from processing.guard_cli import save_pdf, save_logs_for_pdf, process_pdf, process_document_list
+
+SAMPLE_PDF_NAME = "sample"
 
 # Utils
 def create_mock_response(status_code=200, json_data=None):
@@ -19,7 +21,7 @@ def sample_pdf():
     """Create a real temporary PDF file for testing."""
     with tempfile.TemporaryDirectory() as tmp_dir_name:
         temp_dir = Path(tmp_dir_name)
-        pdf_path = temp_dir / "sample.pdf"
+        pdf_path = temp_dir / f"{SAMPLE_PDF_NAME}.pdf"
         
         doc = fitz.open()
         page = doc.new_page()
@@ -60,7 +62,7 @@ def mock_presidio_response():
 
 # Tests
 @pytest.mark.integration
-def test_integration_process_pdf(sample_pdf, mock_presidio_response):
+def test_integration_process_pdf_redact(sample_pdf, mock_presidio_response):
     """Integration test for processing a real PDF file. Mocking only Presidio API call."""
     pdf_path, temp_dir = sample_pdf
     output_dir = temp_dir / "output"
@@ -81,6 +83,30 @@ def test_integration_process_pdf(sample_pdf, mock_presidio_response):
         pdf.close()
 
 @pytest.mark.integration
+def test_integration_process_pdf_highlight(sample_pdf, mock_presidio_response):
+    """Integration test for processing a real PDF file. Mocking only Presidio API call."""
+    pdf_path, temp_dir = sample_pdf
+    output_dir = temp_dir / "output"
+    output_dir.mkdir(exist_ok=True)
+    sample_pdf_name=SAMPLE_PDF_NAME
+    
+    with patch('requests.post') as mock_post:
+        mock_post.return_value = create_mock_response(200, mock_presidio_response)
+        
+        pdf = fitz.open(str(pdf_path))
+        log_dict = process_pdf(pdf, generate_log=True, should_redact=False)
+        save_pdf(pdf, output_dir, has_been_highlighted=True)
+        save_logs_for_pdf(pdf=pdf, output_dir=output_dir, log_dict=log_dict)#
+
+        expected_output = output_dir / f"HIGHLIGHTED_{sample_pdf_name}.pdf"
+        expected_log_output = output_dir / f"{sample_pdf_name}_LOGS" / "page_0.json"
+        assert expected_output.exists()
+        assert expected_log_output.exists()
+        assert mock_post.call_count == len(pdf)
+        
+        pdf.close()
+
+@pytest.mark.integration
 def test_integration_process_document_list(sample_pdf, mock_presidio_response):
     """Integration test for processing a list of real PDF documents. Mocking only Presidio API call."""
     
@@ -88,7 +114,7 @@ def test_integration_process_document_list(sample_pdf, mock_presidio_response):
     output_dir = temp_dir / "output"
     output_dir.mkdir(exist_ok=True)
     # pdf names for checking if log folder exists
-    pdf_name_1 = "sample"
+    pdf_name_1 = SAMPLE_PDF_NAME
     pdf_name_2 = "sample_2"
 
     # Second PDF for testing list processing
