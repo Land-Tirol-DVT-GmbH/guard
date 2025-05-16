@@ -23,12 +23,11 @@ LANGUAGES_DISPLAY = {
 
 #TODO: Verbose mode maybe?
 
-
 #check if presidio is available
 def check_api_available(api_endpoint: str):
     """Checks if the refered Presidio-API endpoint is available."""
     try:
-        response = requests.get(presidio_api_endpoint + "/health")
+        response = requests.get(api_endpoint + "/health")
         if response.status_code != 200:
             print(f"Presidio service not available! Received:", response.status_code)
             sys.exit(1)
@@ -36,7 +35,15 @@ def check_api_available(api_endpoint: str):
         print(f"Could not reach presidio service: {e}")
         sys.exit(1)
 
-def process_presidio_results(results, page, text):
+def add_redaction_annotation_to_page(page, areas):
+    for area in areas:
+        page.add_redact_annot(area, fill=(0, 0, 0))
+
+def add_highlight_annotation_to_page(page, areas):
+    for area in areas:
+        page.add_highlight_annot(area)
+
+def process_presidio_results(results, page, text, should_redact=True, verbose = False):
     """
     Apply redaction annotations to a PDF page based on Presidio analysis results.
 
@@ -44,26 +51,37 @@ def process_presidio_results(results, page, text):
         results (List[Dict]): List of recognized PII entities, each with 'start' and 'end' offsets.
         page (fitz.Page): The PDF page object from PyMuPDF to apply redactions on.
         text (str): Full text content of the page, used to locate entities.
+        should_redact (bool): If True, redact. If False, highlight. Defaults to True.
+        verbose (bool): If True, print messages for not-found text. Defaults to False.
     """
+    if not results:
+        return
+    
+    annotation_fn = add_redaction_annotation_to_page if should_redact else add_highlight_annotation_to_page
+
     for entity in results:
         matched_text = text[entity["start"]:entity["end"]]
         areas = page.search_for(matched_text)
-        if areas:
-            for area in areas:
-                page.add_redact_annot(area, fill=(0, 0, 0))
-        else:
-            #Here, if verbose is added, add this for verbose printout
-            print(f"Text '{matched_text}' not found for redaction on this page.")
-    page.apply_redactions()
 
+        if not areas:
+            if verbose:
+                print(f"Text '{matched_text}' not found for redaction on this page.")
+            continue
 
-def process_pdf(pdf, generate_log=False) -> List[Dict[str, Any]]:
+        annotation_fn(page=page, areas=areas)
+        
+    if should_redact: 
+        page.apply_redactions()
+
+def process_pdf(pdf, generate_log=False, verbose=False, should_redact=True) -> List[Dict[str, Any]]:
     """
     Analyze and redact sensitive information in a single PDF using Presidio.
 
     Args:
         pdf (fitz.Document): A PyMuPDF document object representing the input PDF.
-        generate_log: Generates a log dictionary for each page of the pdf
+        generate_log: Generates a log dictionary for each page of the pdf.
+        verbose: If True, prints detailed processing information.
+        should_redact: If Ture, redacts the document, if False, highlights whatever would be redacted.
     
     Returns:
         List:[{"page": count starting at 0, "request": request body, "response": presidio response body}]
@@ -90,19 +108,21 @@ def process_pdf(pdf, generate_log=False) -> List[Dict[str, Any]]:
             continue
         
         results = response.json()
-        process_presidio_results(results=results, page=page, text=text)
+        process_presidio_results(results=results, page=page, text=text, should_redact=should_redact)
         count += 1
     return logs
 
-def save_pdf(pdf, output_dir):
+def save_pdf(pdf, output_dir, has_been_highlighted=False):
     """
     Save the redacted PDF to the output directory with a modified name.
 
     Args:
         pdf (fitz.Document): The PyMuPDF document object to save.
         output_dir (Path): The output directory path where the file will be saved.
+        has_been_highlighted (bool): Sets prefix to HIGHLIGHTED_ if set to True. Defaults to False.
     """
-    pdf_name = "REDACTED_" + Path(pdf.name).name
+    prefix = "REDACTED_" if not has_been_highlighted else "HIGHLIGHTED_"
+    pdf_name = prefix + Path(pdf.name).name
     output_path = output_dir / pdf_name
 
     try:
@@ -130,7 +150,7 @@ def save_logs_for_pdf(pdf, output_dir, log_dict):
             print(f"Failed to write log for page {page['page']}: {e}")
 
 
-def process_document_list(document_list, output_dir, log_to_json=False):
+def process_document_list(document_list, output_dir, log_to_json=False, should_redact=True):
     """
     Process a list of PDFs, redacting sensitive content and saving results.
 
@@ -140,8 +160,8 @@ def process_document_list(document_list, output_dir, log_to_json=False):
     """
 
     for pdf in document_list:
-        log_dict = process_pdf(pdf=pdf, generate_log=log_to_json)
-        save_pdf(pdf=pdf, output_dir=output_dir)
+        log_dict = process_pdf(pdf=pdf, generate_log=log_to_json, should_redact=should_redact)
+        save_pdf(pdf=pdf, output_dir=output_dir, has_been_highlighted=(not should_redact))
         if(log_to_json):
             save_logs_for_pdf(pdf=pdf, output_dir=output_dir, log_dict=log_dict)
 
@@ -162,21 +182,25 @@ def main():
     parser.add_argument("-o", "--output", type=Path, help="Directory where the redacted files will be saved. Defaults to './redacted'.")
     parser.add_argument("-l", "--language", type=str, help=f"Language for Presidio analysis. We currently support: {format_supported_languages()}\n Defaults to 'de'.")
     parser.add_argument("-j", "--json-log", action="store_true", help="Enable JSON logging. Saves Presidio input/output logs per page in the specified output folder.")
+    parser.add_argument("--highlight", action="store_true", help="Disables redaction of documents, and highlights the detected sections instead redacting them.")
     args = parser.parse_args()
 
     document_list = []
 
+    used_language = args.language
+
+    log_results_into_json = args.json_log or args.highlight
+    highlight_mode = args.highlight
+
     if args.output:
         output_dir = args.output
     else:
-        output_dir = Path("./redacted")
+        output_dir = Path("./redacted") if not highlight_mode else Path("./highlighted_redaction")
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    if not is_supported_language(args.language):
-        print(f"'{args.language}' is not supported. We currently support: \n {format_supported_languages()}")
+    if not is_supported_language(used_language):
+        print(f"'{used_language}' is not supported. We currently support: \n {format_supported_languages()}")
         sys.exit(1)
-
-    used_language = args.language
 
     if args.file:
         if not args.file.is_file():
@@ -190,8 +214,6 @@ def main():
             file_handler = FileHandler(args.file, "file")
             document = file_handler.get_document_list()
             document_list.extend(document)
-
-    log_results_into_json = args.json_log
 
     if args.directory:
         if not args.directory.is_dir():
@@ -207,7 +229,7 @@ def main():
         print("Error: You must provide either a file (-f) or a directory (-d).")
         sys.exit(1)
 
-    process_document_list(document_list=document_list, output_dir=output_dir, log_to_json=log_results_into_json)
+    process_document_list(document_list=document_list, output_dir=output_dir, log_to_json=log_results_into_json, should_redact=(not highlight_mode))
     
     print(f"Documents parsed to text: {len(document_list)}")
     print(f"Redacted files saved to: {output_dir}")
