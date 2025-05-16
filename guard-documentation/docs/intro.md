@@ -13,36 +13,6 @@ Guard provides:
 - **Customizable Recognizers**: Tailor detection to your specific requirements.
 - **Multilingual Support**: Detect sensitive data in English, German, Italian (Beta)
 
----
-
-## 📚 Quickstart
-
-Set up Guard and see it in action:
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Land-Tirol-DVT-GmbH/guard.git && cd guard/processing
-   ```
-
-2. Install dependencies:
-   ```bash
-   conda env create -f environment.yml && conda activate guard-env
-   ```
-
-3. Run the REST API server for local inference:
-   ```bash
-   python app.py
-   ```
-
-4. Alternatively, use the CLI tool, which also starts the REST API server:
-   ```bash
-   python guard_cli.py --file /path/to/input.pdf --output /path/to/output
-   ```
-
-Expand for more details in the [Getting Started Guide](docs/getting-started.md).
-
----
-
 ## 🌟 Advantages
 
 ### 1. Simplicity
@@ -53,6 +23,8 @@ Expand for more details in the [Getting Started Guide](docs/getting-started.md).
 - **YAML Configuration**: Write your configurations naturally and include new recognizers at ease.
 - **Pre-Configured**: Pre-configured with recognizers focused on Austrian data.
 </details>
+
+---
 
 ### 2. Powerfulness
 <details>

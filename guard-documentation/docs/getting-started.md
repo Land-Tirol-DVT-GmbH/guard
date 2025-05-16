@@ -3,65 +3,64 @@ sidebar_position: 2
 ---
 
 # Getting Started
+:::info
 
-Follow these steps to set up and run Guard:
+Follow this guide on how to setup the CLI tool or the GUARD server
+:::
 
-## Prerequisites
+---
+
+## 1. Prerequisites
 
 Ensure that you have the following installed:
 - Python 3.8 or higher
 - Conda (Anaconda or Miniconda)
 
-## Installation
+---
+
+## 2. Installation
+Set up GUARD in a few minutes:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/<your-repo>/guard.git
-   cd guard
+   git clone https://github.com/Land-Tirol-DVT-GmbH/guard.git && cd guard/processing
    ```
 
-2. Create a Conda environment:
+2. Install dependencies:
    ```bash
-   conda create --name guard-env python=3.8 -y
+   conda env create -f environment.yml && conda activate guard-env
    ```
 
-3. Activate the environment:
-   ```bash
-   conda activate guard-env
-   ```
+---
 
-4. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-5. Configure the server:
-   - Edit the `full_analyzer_config.yaml` file to suit your requirements.
-
-## Running the Application
+## 3. Running the Application
 
 ### Start the REST API Server
-Run the Flask server:
-```bash
-python app.py
-```
+Run the Flask API server for local inference:
+   ```bash
+   python app.py
+   ```
+
+Expand for more details in the [API Reference](guides/api-reference.md).
 
 ### Use the CLI Tool
 Run the CLI tool to process files:
-```bash
-python guard_cli.py --input /path/to/input.pdf --output /path/to/output
-```
+   ```bash
+   python guard_cli.py --file /path/to/input.pdf --output /path/to/output
+   ```
 
-Visit the [CLI Tool Documentation](cli-tool.md) for more details.
+Expand for more details in the [CLI Reference](guides/cli-tool.md).
 
-## Running Tests
+---
+
+## 4. Running Tests
 
 Run the test suite to ensure everything works as expected:
 ```bash
 pytest
 ```
 
-## Deactivating the Environment
+## 5. Deactivating the Environment
 When you're done working, deactivate the Conda environment:
 ```bash
 conda deactivate
