@@ -31,6 +31,13 @@ Set up GUARD in a few minutes:
    conda env create -f environment.yaml && conda activate guard-env
    ```
 
+3. Install Spacy language models:
+   ```bash
+   python -m spacy download de_core_news_lg
+   python -m spacy download en_core_web_lg
+   python -m spacy download it_core_news_lg
+   ```
+
 ---
 
 ## 2. Running the Application
