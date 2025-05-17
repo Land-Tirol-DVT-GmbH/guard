@@ -1,6 +1,13 @@
 # 🗃️ GUARD
 Austrian data anonymization at ease. GUARD builds on top of [Microsoft Presidio](https://github.com/microsoft/presidio) and makes use of multiple open source `NER` / `transformer` models to detect sensitive data.
 
+## Documentation
+Detailed documentation can be found under `guard/guard-documentation`. The documentation is built on top of [Docusaurus](https://docusaurus.io).
+
+To start the webserver serving the documentation:
+```bash
+    npx docusaurus start
+```
 ## Curerntly supported languages
 - DE
 - EN
