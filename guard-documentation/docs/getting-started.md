@@ -28,7 +28,7 @@ Set up GUARD in a few minutes:
 
 2. Install dependencies:
    ```bash
-   conda env create -f environment.yml && conda activate guard-env
+   conda env create -f environment.yaml && conda activate guard-env
    ```
 
 ---
