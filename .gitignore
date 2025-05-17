@@ -2,5 +2,6 @@
 /processing/.conda/
 /processing/venv/
 /processing/redacted/
+/processing/highlighted_redaction
 __pycache__
 /presidio-env
