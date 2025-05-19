@@ -24,7 +24,7 @@ jobs:
           auto-activate-base: false
           activate-environment: guard-env
           python-version: "3.11"
-          miniforge-variant: Mambaforge
+          miniforge-variant: Miniforge3
 
       - name: Cache NLP models (spaCy, Flair, HuggingFace)
         uses: actions/cache@v4
