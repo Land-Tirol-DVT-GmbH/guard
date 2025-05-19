@@ -85,10 +85,9 @@ The API will return:
 
 Get started and explore more:
 - [Getting Started Guide](docs/getting-started.md)
-- [CLI Tool Guide](docs/cli-tool.md)
-- [API Reference](docs/api-reference.md)
-- [Analyzer Configuration](docs/analyzer-configuration.md)
-- [Contributing Guide](docs/contributing.md)
+- [CLI Tool Guide](docs/guides/cli-tool.md)
+- [API Reference](docs/guides/api-reference.md)
+- [Analyzer Configuration](docs/guides/analyzer-configuration.md)
 
 ---
 
