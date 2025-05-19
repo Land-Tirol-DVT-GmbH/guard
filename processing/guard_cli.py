@@ -75,7 +75,7 @@ def process_presidio_results(results, page, text, should_redact=True, verbose = 
 
 def process_pdf(pdf, generate_log=False, verbose=False, should_redact=True) -> List[Dict[str, Any]]:
     """
-    Analyze and redact sensitive information in a single PDF using Presidio.
+    Analyze and redact sensitive information in a single PDF file using Presidio.
 
     Args:
         pdf (fitz.Document): A PyMuPDF document object representing the input PDF.
