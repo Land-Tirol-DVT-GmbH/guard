@@ -1,0 +1,67 @@
+name: CI with Cached NLP Models
+
+on:
+  push:
+    paths:
+      - "processing/**"
+  pull_request:
+    paths:
+      - "processing/**"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          environment-file: processing/environment.yaml
+          auto-activate-base: false
+          activate-environment: guard-env
+          python-version: "3.11"
+          miniforge-variant: Mambaforge
+
+      - name: Cache NLP models (spaCy, Flair, HuggingFace)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/huggingface
+            ~/.cache/torch
+            ~/.cache/flair
+            ~/.cache/spacy
+          key: ${{ runner.os }}-nlp-models-v1
+
+      - name: Install test dependencies (pytest, pytest-cov)
+        run: |
+          pip install pytest pytest-cov
+
+      # OPTIONAL: Pre-download models. If your code downloads on demand, you may skip these steps.
+      # - name: Download spaCy models
+      #   run: |
+      #     python -m spacy download de_core_news_lg
+      #     python -m spacy download it_core_news_lg
+      #     python -m spacy download en_core_web_lg
+
+      # - name: Download Flair NER models
+      #   run: |
+      #     python -c "from flair.models import SequenceTagger; SequenceTagger.load('ner')"
+      #     python -c "from flair.models import SequenceTagger; SequenceTagger.load('de-ner')"
+
+      # - name: Download DistilBERT multilingual model
+      #   run: |
+      #     python -c "from transformers import AutoModel; AutoModel.from_pretrained('distilbert-base-multilingual-cased')"
+
+      - name: Run tests
+        working-directory: processing
+        run: pytest --cov=processing --cov-report=xml:coverage.xml tests
+
+      - name: Upload coverage report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: processing/coverage.xml
