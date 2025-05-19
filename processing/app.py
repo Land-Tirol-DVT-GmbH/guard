@@ -1,5 +1,5 @@
 """
-REST API server for analyzer.
+REST API server for Presidio analyzer.
 
 From: https://github.com/microsoft/presidio/blob/main/presidio-analyzer/app.py
 """
