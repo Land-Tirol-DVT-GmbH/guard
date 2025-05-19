@@ -25,10 +25,12 @@ jobs:
           activate-environment: guard-env
           python-version: "3.11"
           miniforge-variant: Miniforge3
-          update-conda: true  # Ensure the environment is up-to-date
+          update-conda: true
 
       - name: Verify Conda Environment
         run: |
+          conda init bash
+          source ~/.bashrc
           conda activate guard-env
           conda info --envs
 
