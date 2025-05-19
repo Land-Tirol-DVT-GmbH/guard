@@ -25,6 +25,10 @@ jobs:
           activate-environment: guard-env
           python-version: "3.11"
           miniforge-variant: Miniforge3
+          update-conda: true  # Ensure the environment is up-to-date
+
+      - name: Verify Conda Environment
+        run: conda info --envs
 
       - name: Cache NLP models (spaCy, Flair, HuggingFace)
         uses: actions/cache@v4
@@ -36,28 +40,6 @@ jobs:
             ~/.cache/spacy
           key: ${{ runner.os }}-nlp-models-v1
 
-      # OPTIONAL: Pre-download models. If your code downloads on demand, you may skip these steps.
-      # - name: Download spaCy models
-      #   run: |
-      #     python -m spacy download de_core_news_lg
-      #     python -m spacy download it_core_news_lg
-      #     python -m spacy download en_core_web_lg
-
-      # - name: Download Flair NER models
-      #   run: |
-      #     python -c "from flair.models import SequenceTagger; SequenceTagger.load('ner')"
-      #     python -c "from flair.models import SequenceTagger; SequenceTagger.load('de-ner')"
-
-      # - name: Download DistilBERT multilingual model
-      #   run: |
-      #     python -c "from transformers import AutoModel; AutoModel.from_pretrained('distilbert-base-multilingual-cased')"
-
       - name: Run GUARD cli unit test
         working-directory: processing
         run: pytest tests/unit/test_guard_cli.py
-
-      #- name: Upload coverage report as artifact
-      #  uses: actions/upload-artifact@v4
-      #  with:
-      #    name: coverage-report
-      #    path: processing/coverage.xml
