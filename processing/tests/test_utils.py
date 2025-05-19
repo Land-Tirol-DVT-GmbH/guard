@@ -27,8 +27,10 @@ def create_test_pdf(path, text):
     doc.close()
     return path
 
-def assert_entity_supported(engine, entity_type):
+def assert_entity_supported(engine, entity_type, languages=None):
     """Assert that an entity type is supported in the given languages."""
-    for language in LANGUAGES:
+    if languages is None:
+        languages = LANGUAGES
+    for language in languages:
         assert entity_type in engine.get_supported_entities(language=language), \
             f"Entity {entity_type} not supported in {language}"

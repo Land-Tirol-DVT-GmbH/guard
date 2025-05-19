@@ -5,7 +5,8 @@ from processing.tests.test_utils import assert_entity_supported
 
 @pytest.mark.unit
 def test_organization_recognizer_supported_by_all_langs(setup_engine):
-    assert_entity_supported(setup_engine, "ORGANIZATION")
+    # Special case, only de and en, no it recognizer
+    assert_entity_supported(setup_engine, "ORGANIZATION", ["de", "en"])
 
 
 @pytest.mark.unit
