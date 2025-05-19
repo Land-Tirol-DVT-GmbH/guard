@@ -27,13 +27,6 @@ jobs:
           miniforge-variant: Miniforge3
           update-conda: true
 
-      - name: Verify Conda Environment
-        run: |
-          conda init bash
-          source ~/.bashrc
-          conda activate guard-env
-          conda info --envs
-
       - name: Cache NLP models (spaCy, Flair, HuggingFace)
         uses: actions/cache@v4
         with:
@@ -46,4 +39,7 @@ jobs:
 
       - name: Run GUARD cli unit test
         working-directory: processing
-        run: pytest tests/unit/test_guard_cli.py
+        shell: bash -l {0}
+        run: |
+          conda activate guard-env
+          pytest tests/unit/test_guard_cli.py
