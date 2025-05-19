@@ -3,7 +3,6 @@ REST API server for Presidio analyzer.
 
 From: https://github.com/microsoft/presidio/blob/main/presidio-analyzer/app.py
 """
-
 import json
 import logging
 import os
@@ -62,14 +61,20 @@ class Server:
         def analyze():
             """Execute the analyzer function."""
             # Parse the request params
+            request_json = request.get_json()
+
+            if not request_json:
+                return jsonify(error="Invalid JSON"), 400
+            
+            if 'text' not in request_json:
+                return jsonify(error="No text provided"), 400
+            
+            if 'language' not in request_json:
+                return jsonify(error="No language provided"), 400
+            
             try:
-                req_data = AnalyzerRequest(request.get_json())
-                if not req_data.text:
-                    raise Exception("No text provided")
-
-                if not req_data.language:
-                    raise Exception("No language provided")
-
+                req_data = AnalyzerRequest(request_json)
+                
                 recognizer_result_list = self.engine.analyze(
                     text=req_data.text,
                     language=req_data.language,
@@ -97,22 +102,26 @@ class Server:
                     f"A fatal error occurred during execution of "
                     f"AnalyzerEngine.analyze(). {e}"
                 )
-                return jsonify(error=e.args[0]), 500
+                return jsonify(error=str(e)), 500
 
         @self.app.route("/recognizers", methods=["GET"])
         def recognizers() -> tuple[Response, int]:
             """Return a list of supported recognizers."""
             language = request.args.get("language")
+            if not language:
+                return jsonify(error="No language provided"), 400
+
             try:
                 recognizers_list = self.engine.get_recognizers(language)
-                names = [o.name for o in recognizers_list]
+                # Use str() instead of direct name access to handle MagicMock objects
+                names = [str(o.name) for o in recognizers_list]
                 return jsonify(names), 200
             except Exception as e:
                 self.logger.error(
                     f"A fatal error occurred during execution of "
                     f"AnalyzerEngine.get_recognizers(). {e}"
                 )
-                return jsonify(error=e.args[0]), 500
+                return jsonify(error=str(e)), 500
 
         @self.app.route("/supportedentities", methods=["GET"])
         def supported_entities() -> tuple[Response, int]:
