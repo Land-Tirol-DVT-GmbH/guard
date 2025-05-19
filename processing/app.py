@@ -1,5 +1,5 @@
 """
-REST API server for analyzer.
+REST API server for Presidio analyzer.
 
 From: https://github.com/microsoft/presidio/blob/main/presidio-analyzer/app.py
 """
@@ -15,7 +15,6 @@ from presidio_analyzer import AnalyzerEngine, AnalyzerRequest
 from utils.engine_factory import create_analyzer_engine
 from werkzeug.exceptions import HTTPException
 
-from core.flair_recognizer import FlairRecognizer
 from dotenv import load_dotenv
 
 DEFAULT_PORT = "3000"
