@@ -5,7 +5,7 @@ sidebar_position: 2
 # Getting Started
 :::info
 
-Follow this guide on how to setup the CLI tool or the GUARD server
+Follow this guide on how to setup the CLI tool or the GUARD server.
 :::
 
 ---
