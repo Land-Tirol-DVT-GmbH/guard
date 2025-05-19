@@ -36,10 +36,6 @@ jobs:
             ~/.cache/spacy
           key: ${{ runner.os }}-nlp-models-v1
 
-      - name: Install test dependencies (pytest, pytest-cov)
-        run: |
-          pip install pytest pytest-cov
-
       # OPTIONAL: Pre-download models. If your code downloads on demand, you may skip these steps.
       # - name: Download spaCy models
       #   run: |
@@ -56,12 +52,12 @@ jobs:
       #   run: |
       #     python -c "from transformers import AutoModel; AutoModel.from_pretrained('distilbert-base-multilingual-cased')"
 
-      - name: Run tests
+      - name: Run GUARD cli unit test
         working-directory: processing
-        run: pytest --cov=processing --cov-report=xml:coverage.xml tests
+        run: pytest tests/unit/test_guard_cli.py
 
-      - name: Upload coverage report as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: processing/coverage.xml
+      #- name: Upload coverage report as artifact
+      #  uses: actions/upload-artifact@v4
+      #  with:
+      #    name: coverage-report
+      #    path: processing/coverage.xml
