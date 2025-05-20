@@ -8,12 +8,14 @@ import requests
 from utils.file_handler import FileHandler 
 from dotenv import load_dotenv
 
+DEFAULT_LANGUAGE="de"
+
 load_dotenv(dotenv_path=Path(__file__).parent / '.env')
 
 presidio_api_endpoint = os.environ.get("PRESIDIO_API_ENDPOINT")
 presidio_api_analysis = presidio_api_endpoint + "/analyze"
 
-used_language = "de"
+used_language = DEFAULT_LANGUAGE
 
 LANGUAGES_DISPLAY = {
     "de": "German",
@@ -187,7 +189,7 @@ def main():
 
     document_list = []
 
-    used_language = args.language
+    used_language = args.language or DEFAULT_LANGUAGE
 
     log_results_into_json = args.json_log or args.highlight
     highlight_mode = args.highlight
