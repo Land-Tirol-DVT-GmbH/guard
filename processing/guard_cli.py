@@ -47,7 +47,7 @@ def add_highlight_annotation_to_page(page, areas):
 
 def process_presidio_results(results, page, text, should_redact=True, verbose = False):
     """
-    Apply redaction annotations to a PDF page based on Presidio analysis results.
+    Apply redaction annotations to a PDF page based on Presidio analysis results
 
     Args:
         results (List[Dict]): List of recognized PII entities, each with 'start' and 'end' offsets.
