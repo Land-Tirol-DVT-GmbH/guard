@@ -48,7 +48,7 @@ class Server:
 
         # Init the analyzer engine
         self.logger.info("Initializing analyzer engine...")
-        self.engine:AnalyzerEngine = create_analyzer_engine()
+        self.engine:AnalyzerEngine = create_analyzer_engine(logger=self.logger)
     
         self.logger.info(WELCOME_MESSAGE)
 
