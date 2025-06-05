@@ -306,7 +306,13 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process and redact PDF files.")
-    parser.add_argument("-i", "--json-input", type=Path, help="Path to a directory containing a directory containing JSON files with redaction information. (for example '-i redacted -f filename.pdf' for json files in 'redacted/LOGS_<filename>/page_0.json' and a file at 'filename.pdf')")
+    parser.add_argument("-i", "--json-input", type=Path, help=(
+        "Path to a directory containing redaction JSON files for a specific PDF. "
+        "This bypasses backend PII detection and applies redactions from pre-existing data. "
+        "The directory must include JSON files named like 'page_0.json', 'page_1.json', etc. "
+        "Example: use '-i redacted/LOGS_filename -f filename.pdf' where the JSON directory contains "
+        "page-wise redaction files for 'filename.pdf'."
+    ))
     parser.add_argument("-f", "--file", type=Path, help="Path to a PDF file")
     parser.add_argument("-d", "--directory", type=Path,
                         help="Path to a directory containing one or multiple PDF files to redact.")
