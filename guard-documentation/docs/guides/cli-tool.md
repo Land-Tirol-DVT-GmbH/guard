@@ -35,6 +35,12 @@ The tool supports:
 - **Output Naming**: 
   - Redacted files are saved with the prefix `REDACTED_` in the chosen output directory.
   - Highlighted files are saved with the prefix `HIGHLIGHTED_` in the output directory (defaults to `./highlighted_redaction/`).
+- **Custom Redaction via JSON Input**:
+  - Use `--json-input <dir>` to apply redactions directly from existing JSON metadata, bypassing backend PII detection.
+  - The argument must point to a **directory** containing per-page redaction files named like `page_0.json`, `page_1.json`, etc.
+  - Example usage: `-i redacted/LOGS_filename -f filename.pdf`  
+    This expects a matching PDF file (`filename.pdf`) and a folder (`redacted/LOGS_filename/`) with the page-wise JSON files.
+  - Useful for reprocessing with previously exported redaction metadata generated via JSON logging.
 </details>
 
 <details>
