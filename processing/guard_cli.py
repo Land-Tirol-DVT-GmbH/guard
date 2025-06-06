@@ -214,8 +214,13 @@ def process_document_list(document_list, output_dir, log_to_json=False, should_r
         if json_input_dir:
             # Use JSON input instead of Presidio API
             pdf_name = Path(pdf.name).stem
-            pdf_json_dir = json_input_dir / f"{pdf_name}_LOGS"
+            # TODO: If f is set, do as it is now, if d is set (Input flags for guard), give the directory for all log folders.
+            pdf_json_dir = json_input_dir # / f"{pdf_name}_LOGS"
+            expected_dir_name = f"{pdf_name}_LOGS"
 
+            if not json_input_dir.name == expected_dir_name:
+                print("Warning: The given directory name does not match exactly our format of <pdf-file-name>_LOGS. If you the output is incorrect, check if you have given the correct folder.")
+            
             if not pdf_json_dir.exists() or not pdf_json_dir.is_dir():
                 print(f"Warning: JSON directory {pdf_json_dir} not found for {pdf_name}. Skipping this PDF.")
                 continue
@@ -306,7 +311,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process and redact PDF files.")
-    parser.add_argument("-i", "--json-input", type=Path, help="Path to a directory containing a directory containing JSON files with redaction information. (for example '-i redacted -f filename.pdf' for json files in 'redacted/LOGS_<filename>/page_0.json' and a file at 'filename.pdf')")
+    parser.add_argument("-i", "--json-input", type=Path, help="Path to a directory containing a directory containing JSON files with redaction information. (for example '-i redacted -f filename.pdf' for json files in 'redacted/<filename>_LOGS/page_0.json' and a file at 'filename.pdf')")
     parser.add_argument("-f", "--file", type=Path, help="Path to a PDF file")
     parser.add_argument("-d", "--directory", type=Path,
                         help="Path to a directory containing one or multiple PDF files to redact.")
