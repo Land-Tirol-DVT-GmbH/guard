@@ -2,6 +2,8 @@ import os
 import sys
 import json
 import argparse
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from typing import List, Dict, Any
 from pathlib import Path
 import requests
@@ -67,7 +69,8 @@ def process_presidio_results(results, page, text, should_redact=True, verbose = 
 
         if not areas:
             if verbose:
-                print(f"Text '{matched_text}' not found for redaction on this page.")
+                with threading.Lock():
+                    print(f"Text '{matched_text}' not found for redaction on this page.")
             continue
 
         annotation_fn(page=page, areas=areas)
@@ -92,7 +95,8 @@ def process_pdf(pdf, generate_log=False, verbose=False, should_redact=True) -> L
     logs = []
     count = 0
     pdf_name = Path(pdf.name).name
-    print("Processing: " + pdf_name)
+    with threading.Lock():
+        print("Processing: " + pdf_name)
     for page in pdf:
         text = page.get_text()
         built_request = {
@@ -105,8 +109,9 @@ def process_pdf(pdf, generate_log=False, verbose=False, should_redact=True) -> L
 
 
         if response.status_code != 200:
-            print(f"Presidio error for: {pdf_name} ")
-            print(response.text)
+            with threading.Lock():
+                print(f"Presidio error for: {pdf_name} ")
+                print(response.text)
             continue
 
         results = response.json()
@@ -126,13 +131,15 @@ def process_pdf_with_json(pdf, json_dir, verbose=False, should_redact=True) -> N
     """
     count = 0
     pdf_name = Path(pdf.name).name
-    print("Processing:" + pdf_name + " with JSON input")
+    with threading.Lock():
+        print("Processing:" + pdf_name + " with JSON input")
 
     for page in pdf:
         json_file = json_dir / f"page_{count}.json"
 
         if not json_file.exists():
-            print(f"Warning: JSON file {json_file} not found for page {count}. Skipping this page.")
+            with threading.Lock():
+                print(f"Warning: JSON file {json_file} not found for page {count}. Skipping this page.")
             count += 1
             continue
 
@@ -144,18 +151,21 @@ def process_pdf_with_json(pdf, json_dir, verbose=False, should_redact=True) -> N
 
             # Verify that the text in the JSON matches the text in the PDF
             if "request" in content and "text" in content["request"] and content["request"]["text"] != text:
-                print(f"Warning: Text in JSON file does not match text in PDF for page {count}.")
-                if verbose:
-                    print("This may cause incorrect redaction placement.")
+                with threading.Lock():
+                    print(f"Warning: Text in JSON file does not match text in PDF for page {count}.")
+                    if verbose:
+                        print("This may cause incorrect redaction placement.")
 
             if "response" in content:
                 results = content["response"]
                 process_presidio_results(results=results, page=page, text=text, should_redact=should_redact, verbose=verbose)
             else:
-                print(f"Warning: No response data found in JSON file for page {count}.")
+                with threading.Lock():
+                    print(f"Warning: No response data found in JSON file for page {count}.")
 
         except (json.JSONDecodeError, OSError) as e:
-            print(f"Error reading JSON file for page {count}: {e}")
+            with threading.Lock():
+                print(f"Error reading JSON file for page {count}: {e}")
 
         count += 1
 
@@ -174,9 +184,11 @@ def save_pdf(pdf, output_dir, has_been_highlighted=False):
 
     try:
         pdf.save(str(output_path))
-        print(f"[SUCCESS] Saved redacted PDF to {output_path}")
+        with threading.Lock():
+            print(f"[SUCCESS] Saved redacted PDF to {output_path}")
     except Exception as e:
-        print(f"[ERROR] Failed to save PDF: {e}")
+        with threading.Lock():
+            print(f"[ERROR] Failed to save PDF: {e}")
 
 def save_logs_for_pdf(pdf, output_dir, log_dict):
     folder_name = Path(pdf.name).stem + "_LOGS"
@@ -194,21 +206,14 @@ def save_logs_for_pdf(pdf, output_dir, log_dict):
             with open(output_path / file_name, "w", encoding="utf-8") as f:
                 json.dump(content, f, indent=2)
         except (OSError, TypeError, ValueError) as e:
-            print(f"Failed to write log for page {page['page']}: {e}")
+            with threading.Lock():
+                print(f"Failed to write log for page {page['page']}: {e}")
 
 def handle_json_input_directory(json_input_directory, search_for_log_folder, pdf):
     '''
     Process the given directory based on whether the input is just a file or a directory. 
     
     '''
-    # TODO: Finish this function, return the needed directory and fix the logic of giving the correct directory based on the function description.
-    #       The cases could be: The given directory does not exist
-    #                           The given directory contains multiple _LOG folders
-    #                           The given directory is a _LOG folder
-    #                           The given directory does not contain any _LOG folders
-    #               
-    #                           TODO: After integration, adapt --help message for -i and also docusaurus documentation on -i in section pdf-processing
-    
     pdf_name = Path(pdf.name).stem   
 
     if search_for_log_folder:
@@ -223,12 +228,12 @@ def handle_json_input_directory(json_input_directory, search_for_log_folder, pdf
             
     return json_directory
 
-def process_document_list(document_list, output_dir, log_to_json=False, should_redact=True, json_input_dir=None):
+def process_single_document(pdf, output_dir, log_to_json=False, should_redact=True, json_input_dir=None):
     """
-    Process a list of PDFs, redacting sensitive content and saving results.
+    Process a single PDF document, redacting sensitive content and saving results.
 
     Args:
-        document_list (List[fitz.Document]): A list of PyMuPDF PDF document objects.
+        pdf (fitz.Document): A PyMuPDF PDF document object.
         output_dir (Path): The output directory where redacted files will be stored.
         log_to_json (bool): If True, save Presidio input/output logs. Defaults to False.
         should_redact (bool): If True, redact. If False, highlight. Defaults to True.
@@ -248,12 +253,48 @@ def process_document_list(document_list, output_dir, log_to_json=False, should_r
 
             process_pdf_with_json(pdf=pdf, json_dir=pdf_json_dir, should_redact=should_redact)
             save_pdf(pdf=pdf, output_dir=output_dir, has_been_highlighted=(not should_redact))
-        else:
-            # Use Presidio API
-            log_dict = process_pdf(pdf=pdf, generate_log=log_to_json, should_redact=should_redact)
-            save_pdf(pdf=pdf, output_dir=output_dir, has_been_highlighted=(not should_redact))
-            if log_to_json:
-                save_logs_for_pdf(pdf=pdf, output_dir=output_dir, log_dict=log_dict)
+    else:
+        # Use Presidio API
+        log_dict = process_pdf(pdf=pdf, generate_log=log_to_json, should_redact=should_redact)
+        save_pdf(pdf=pdf, output_dir=output_dir, has_been_highlighted=(not should_redact))
+        if log_to_json:
+            save_logs_for_pdf(pdf=pdf, output_dir=output_dir, log_dict=log_dict)
+
+
+def process_document_list(document_list, output_dir, log_to_json=False, should_redact=True, json_input_dir=None, max_workers=None):
+    """
+    Process a list of PDFs in parallel, redacting sensitive content and saving results.
+
+    Args:
+        document_list (List[fitz.Document]): A list of PyMuPDF PDF document objects.
+        output_dir (Path): The output directory where redacted files will be stored.
+        log_to_json (bool): If True, save Presidio input/output logs. Defaults to False.
+        should_redact (bool): If True, redact. If False, highlight. Defaults to True.
+        json_input_dir (Path): Path to directory containing JSON files with redaction information. If provided,
+                              uses these files instead of calling Presidio API. Defaults to None.
+        max_workers (int, optional): Maximum number of worker threads. If None, uses default based on system.
+    """
+    # Create a thread-safe lock for file operations
+    file_lock = threading.Lock()
+
+    # Create a thread pool executor
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        # Submit each document for processing
+        futures = []
+        for pdf in document_list:
+            future = executor.submit(
+                process_single_document,
+                pdf=pdf,
+                output_dir=output_dir,
+                log_to_json=log_to_json,
+                should_redact=should_redact,
+                json_input_dir=json_input_dir
+            )
+            futures.append(future)
+
+        # Wait for all tasks to complete
+        for future in futures:
+            future.result()
 
 
 def is_supported_language(lang_code: str) -> bool:
@@ -324,7 +365,8 @@ def main(args):
         output_dir=output_dir,
         log_to_json=log_results_into_json,
         should_redact=(not highlight_mode),
-        json_input_dir=json_input_dir
+        json_input_dir=json_input_dir,
+        max_workers=args.threads
     )
 
     print(f"Documents parsed to text: {len(document_list)}")
@@ -332,6 +374,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process and redact PDF files.")
+
     parser.add_argument("-i", "--json-input", type=Path, help="""\
 Path to a directory containing redaction JSON subfolders.
 
@@ -349,6 +392,7 @@ Examples:
 
 Note: PDF filenames must match the JSON folder names exactly.
 """)
+
     parser.add_argument("-f", "--file", type=Path, help="Path to a PDF file")
     parser.add_argument("-d", "--directory", type=Path,
                         help="Path to a directory containing one or multiple PDF files to redact.")
@@ -360,6 +404,8 @@ Note: PDF filenames must match the JSON folder names exactly.
                         help="Enable JSON logging. Saves Presidio input/output logs per page in the specified output folder.")
     parser.add_argument("--highlight", action="store_true",
                         help="Disables redaction of documents, and highlights the detected sections instead redacting them.")
+    parser.add_argument("-t", "--threads", type=int,
+                        help="Number of worker threads to use for parallel processing. Defaults to the number of CPU cores.")
 
     # We only need to parse the json-input argument here, the full parsing happens in main()
     args, _ = parser.parse_known_args()
