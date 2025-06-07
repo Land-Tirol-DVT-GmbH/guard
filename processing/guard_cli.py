@@ -196,7 +196,7 @@ def save_logs_for_pdf(pdf, output_dir, log_dict):
         except (OSError, TypeError, ValueError) as e:
             print(f"Failed to write log for page {page['page']}: {e}")
 
-def handle_json_input_directory(json_input_directory):
+def handle_json_input_directory(json_input_directory, search_for_log_folder, pdf):
     '''
     Process the given directory based on whether the input is just a file or a directory. 
     
@@ -208,15 +208,20 @@ def handle_json_input_directory(json_input_directory):
     #                           The given directory does not contain any _LOG folders
     #               
     #                           TODO: After integration, adapt --help message for -i and also docusaurus documentation on -i in section pdf-processing
-    #     #       
-    pdf_name = Path(pdf.name).stem
-    pdf_json_dir = json_input_directory # / f"{pdf_name}_LOGS"
+    
+    pdf_name = Path(pdf.name).stem   
+
+    if search_for_log_folder:
+        json_directory = json_input_directory / f"{pdf_name}_LOGS"
+    else:
+        json_directory = json_input_directory
+
     expected_dir_name = f"{pdf_name}_LOGS"
 
     if not json_input_directory.name == expected_dir_name:
         print("Warning: The given directory name does not match exactly our format of <pdf-file-name>_LOGS. If you the output is incorrect, check if you have given the correct folder.")
             
-    return
+    return json_directory
 
 def process_document_list(document_list, output_dir, log_to_json=False, should_redact=True, json_input_dir=None):
     """
@@ -235,13 +240,8 @@ def process_document_list(document_list, output_dir, log_to_json=False, should_r
         if json_input_dir:
             # Use JSON input instead of Presidio API
             pdf_name = Path(pdf.name).stem
-            # TODO: If f is set, do as it is now, if d is set (Input flags for guard), give the directory for all log folders.
-            pdf_json_dir = json_input_dir # / f"{pdf_name}_LOGS"
-            expected_dir_name = f"{pdf_name}_LOGS"
-
-            if not json_input_dir.name == expected_dir_name:
-                print("Warning: The given directory name does not match exactly our format of <pdf-file-name>_LOGS. If you the output is incorrect, check if you have given the correct folder.")
-            
+            pdf_json_dir = handle_json_input_directory(json_input_dir, (len(document_list) > 1), pdf)
+                
             if not pdf_json_dir.exists() or not pdf_json_dir.is_dir():
                 print(f"Warning: JSON directory {pdf_json_dir} not found for {pdf_name}. Skipping this PDF.")
                 continue
@@ -332,7 +332,23 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process and redact PDF files.")
-    parser.add_argument("-i", "--json-input", type=Path, help="Path to a directory containing a directory containing JSON files with redaction information. (for example '-i redacted -f filename.pdf' for json files in 'redacted/<filename>_LOGS/page_0.json' and a file at 'filename.pdf')")
+    parser.add_argument("-i", "--json-input", type=Path, help="""\
+Path to a directory containing redaction JSON subfolders.
+
+Each subfolder must be named: <PDF_FILENAME>_LOGS
+and include one or more page_*.json files.
+
+Examples:
+  Single file:
+    -f path/to/document.pdf -i path/to/redactions
+    → uses: path/to/redactions/document_LOGS/page_0.json
+
+  Batch mode:
+    -d path/to/pdf_folder -i path/to/redactions
+    → uses: redactions/file1_LOGS/, file2_LOGS/, etc.
+
+Note: PDF filenames must match the JSON folder names exactly.
+""")
     parser.add_argument("-f", "--file", type=Path, help="Path to a PDF file")
     parser.add_argument("-d", "--directory", type=Path,
                         help="Path to a directory containing one or multiple PDF files to redact.")
