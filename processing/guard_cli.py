@@ -209,24 +209,31 @@ def save_logs_for_pdf(pdf, output_dir, log_dict):
             with threading.Lock():
                 print(f"Failed to write log for page {page['page']}: {e}")
 
-def handle_json_input_directory(json_input_directory, search_for_log_folder, pdf):
-    '''
-    Process the given directory based on whether the input is just a file or a directory. 
-    
-    '''
-    pdf_name = Path(pdf.name).stem   
+def handle_json_input_directory(json_input_directory, pdf):
+    """
+    Automatically resolve the correct JSON directory for a given PDF file.
 
-    if search_for_log_folder:
-        json_directory = json_input_directory / f"{pdf_name}_LOGS"
-    else:
-        json_directory = json_input_directory
+    It first checks whether the given json_input_directory directly contains redaction JSON files 
+    (e.g., page_0.json). If not, it looks for a subdirectory named <pdf_name>_LOGS.
 
-    expected_dir_name = f"{pdf_name}_LOGS"
+    Args:
+        json_input_directory (Path): The user-provided base directory.
+        pdf (fitz.Document): The PDF document.
 
-    if not json_input_directory.name == expected_dir_name:
-        print("Warning: The given directory name does not match exactly our format of <pdf-file-name>_LOGS. If you the output is incorrect, check if you have given the correct folder.")
-            
-    return json_directory
+    Returns:
+        Path: The directory where JSON files are located, or None if not found.
+    """
+    pdf_name = Path(pdf.name).stem
+
+    if any(json_input_directory.glob("page_*.json")):
+        return json_input_directory
+
+    expected_subdir = json_input_directory / f"{pdf_name}_LOGS"
+    if expected_subdir.exists() and expected_subdir.is_dir():
+        return expected_subdir
+
+    print(f"Warning: Could not locate suitable JSON redaction files for {pdf_name} in {json_input_directory}")
+    return None
 
 def process_single_document(pdf, output_dir, log_to_json=False, should_redact=True, json_input_dir=None):
     """
@@ -241,18 +248,15 @@ def process_single_document(pdf, output_dir, log_to_json=False, should_redact=Tr
                               uses these files instead of calling Presidio API. Defaults to None.
     """
 
-    for pdf in document_list:
-        if json_input_dir:
-            # Use JSON input instead of Presidio API
-            pdf_name = Path(pdf.name).stem
-            pdf_json_dir = handle_json_input_directory(json_input_dir, (len(document_list) > 1), pdf)
-                
-            if not pdf_json_dir.exists() or not pdf_json_dir.is_dir():
-                print(f"Warning: JSON directory {pdf_json_dir} not found for {pdf_name}. Skipping this PDF.")
-                continue
+    if json_input_dir:
+        # Use JSON input instead of Presidio API
+        pdf_json_dir = handle_json_input_directory(json_input_dir, pdf)
 
-            process_pdf_with_json(pdf=pdf, json_dir=pdf_json_dir, should_redact=should_redact)
-            save_pdf(pdf=pdf, output_dir=output_dir, has_been_highlighted=(not should_redact))
+        if pdf_json_dir is None or not pdf_json_dir.exists() or not pdf_json_dir.is_dir():
+            return
+        
+        process_pdf_with_json(pdf=pdf, json_dir=pdf_json_dir, should_redact=should_redact)
+        save_pdf(pdf=pdf, output_dir=output_dir, has_been_highlighted=(not should_redact))
     else:
         # Use Presidio API
         log_dict = process_pdf(pdf=pdf, generate_log=log_to_json, should_redact=should_redact)
