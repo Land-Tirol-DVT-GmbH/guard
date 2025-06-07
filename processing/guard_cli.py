@@ -196,6 +196,27 @@ def save_logs_for_pdf(pdf, output_dir, log_dict):
         except (OSError, TypeError, ValueError) as e:
             print(f"Failed to write log for page {page['page']}: {e}")
 
+def handle_json_input_directory(json_input_directory):
+    '''
+    Process the given directory based on whether the input is just a file or a directory. 
+    
+    '''
+    # TODO: Finish this function, return the needed directory and fix the logic of giving the correct directory based on the function description.
+    #       The cases could be: The given directory does not exist
+    #                           The given directory contains multiple _LOG folders
+    #                           The given directory is a _LOG folder
+    #                           The given directory does not contain any _LOG folders
+    #               
+    #                           TODO: After integration, adapt --help message for -i and also docusaurus documentation on -i in section pdf-processing
+    #     #       
+    pdf_name = Path(pdf.name).stem
+    pdf_json_dir = json_input_directory # / f"{pdf_name}_LOGS"
+    expected_dir_name = f"{pdf_name}_LOGS"
+
+    if not json_input_directory.name == expected_dir_name:
+        print("Warning: The given directory name does not match exactly our format of <pdf-file-name>_LOGS. If you the output is incorrect, check if you have given the correct folder.")
+            
+    return
 
 def process_document_list(document_list, output_dir, log_to_json=False, should_redact=True, json_input_dir=None):
     """
