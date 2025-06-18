@@ -1,4 +1,4 @@
-name: CI with Cached NLP Models
+name: Unit tests
 
 on:
   push:

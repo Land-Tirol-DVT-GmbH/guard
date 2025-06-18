@@ -176,4 +176,4 @@ class TestAnalyzerApp:
         assert response.status_code == 500
         response_data = json.loads(response.data)
         assert "error" in response_data
-        assert "Test error" in response_data["error"]
+        assert "An internal server error has occurred!" in response_data["error"]

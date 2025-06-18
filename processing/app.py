@@ -48,7 +48,7 @@ class Server:
 
         # Init the analyzer engine
         self.logger.info("Initializing analyzer engine...")
-        self.engine:AnalyzerEngine = create_analyzer_engine()
+        self.engine:AnalyzerEngine = create_analyzer_engine(logger=self.logger)
     
         self.logger.info(WELCOME_MESSAGE)
 
@@ -102,7 +102,7 @@ class Server:
                     f"A fatal error occurred during execution of "
                     f"AnalyzerEngine.analyze(). {e}"
                 )
-                return jsonify(error=str(e)), 500
+                return jsonify(error="An internal server error has occurred!"), 500
 
         @self.app.route("/recognizers", methods=["GET"])
         def recognizers() -> tuple[Response, int]:
@@ -121,7 +121,7 @@ class Server:
                     f"A fatal error occurred during execution of "
                     f"AnalyzerEngine.get_recognizers(). {e}"
                 )
-                return jsonify(error=str(e)), 500
+                return jsonify(error="An internal server error has occurred!"), 500
 
         @self.app.route("/supportedentities", methods=["GET"])
         def supported_entities() -> tuple[Response, int]:
@@ -135,7 +135,7 @@ class Server:
                     f"A fatal error occurred during execution of "
                     f"AnalyzerEngine.supported_entities(). {e}"
                 )
-                return jsonify(error=e.args[0]), 500
+                return jsonify(error="An internal server error has occurred!"), 500
 
         @self.app.errorhandler(HTTPException)
         def http_exception(e):
