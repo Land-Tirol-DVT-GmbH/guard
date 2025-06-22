@@ -1,0 +1,15 @@
+
+Calculating model storage usage...
+
+
+Name                    SizeMB Path
+----                    ------ ----
+SpaCy: en_core_web_lg   424.52 C:\Users\si\.conda\envs\guard-env\Lib\site-packages\en_core_web_lg
+SpaCy: de_core_news_lg  609.76 C:\Users\si\.conda\envs\guard-env\Lib\site-packages\de_core_news_lg
+SpaCy: it_core_news_lg  601.58 C:\Users\si\.conda\envs\guard-env\Lib\site-packages\it_core_news_lg
+Hugging Face cache      517.89 C:\Users\si\.cache\huggingface\hub
+Flair models           1638.96 C:\Users\si\.flair\models
+
+
+
+TOTAL: 3792.71 MB

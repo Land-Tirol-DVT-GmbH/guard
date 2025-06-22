@@ -6,7 +6,6 @@ import spacy
 import torch
 from core.flair_recognizer import FlairRecognizer
 
-
 def create_analyzer_engine(logger: Logger=None) -> AnalyzerEngine:
     analyzer_conf_file = os.environ.get("ANALYZER_CONF_FILE")
 
@@ -21,10 +20,28 @@ def create_analyzer_engine(logger: Logger=None) -> AnalyzerEngine:
     if not resolved_path.exists():
         raise Exception(f"Configuration file {resolved_path} not found!")
 
-    # Check if CUDA is available and prefer the GPU in spacy
-    if torch.cuda.is_available():
-       use_gpu = spacy.prefer_gpu()
-       if logger: logger.info("Running SpaCy on GPU: %s", use_gpu)
+    # Try to use GPU if possible, but handle missing dependencies gracefully
+    use_gpu = False
+    if not torch.cuda.is_available():
+        try:
+            # This sets the preference but doesn't guarantee GPU usage
+            use_gpu = spacy.prefer_gpu()
+            os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+            spacy.require_gpu()
+            print(f"CUDA is available. GPU will be used: {use_gpu}")
+            if logger:
+                logger.info("Running SpaCy on GPU: %s", use_gpu)
+        except Exception as gpu_error:
+            print(f"GPU requested but not available or dependencies missing: {gpu_error}")
+            if logger:
+                logger.warning(f"GPU requested but not available or dependencies missing: {gpu_error}")
+            print("Falling back to CPU.")
+            if logger:
+                logger.info("Falling back to CPU.")
+    else:
+        print("CUDA is not available. CPU will be used.")
+        if logger:
+            logger.info("CUDA is not available. CPU will be used.")
 
     engine = AnalyzerEngineProvider(
         analyzer_engine_conf_file=str(resolved_path),
